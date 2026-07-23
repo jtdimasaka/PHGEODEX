@@ -1079,10 +1079,6 @@ const indicatorSelect =
     );
 
 
-// =========================================================
-// ADMINISTRATIVE LABEL CHECKBOX
-// =========================================================
-
 const showLabelsCheckbox =
 
     document.getElementById(
@@ -1450,7 +1446,7 @@ function getPolygonCentroid(
 
         i <
 
-            coordinates.length - 1;
+        coordinates.length - 1;
 
         i++
 
@@ -1574,6 +1570,19 @@ function getPolygonCentroid(
 // =========================================================
 // FORMAT LABEL TEXT
 // =========================================================
+//
+// Special handling:
+//
+// Region III
+// Region IV-A
+// Region IV-B
+// Region V
+//
+// These remain on one line.
+//
+// Other labels wrap only at spaces.
+// Words are never split.
+//
 
 function formatLabelText(
 
@@ -1584,7 +1593,7 @@ function formatLabelText(
 ) {
 
 
-    const words =
+    const cleanText =
 
         String(
 
@@ -1594,11 +1603,46 @@ function formatLabelText(
 
             .trim()
 
-            .split(
+            .replace(
 
-                /\s+/
+                /\s+/g,
+
+                " "
 
             );
+
+
+    // =========================================
+    // KEEP REGION NUMBERS TOGETHER
+    // =========================================
+
+    if (
+
+        /^Region\s+[IVXLCDM]+(?:-[A-Z]+)?$/i.test(
+
+            cleanText
+
+        )
+
+    ) {
+
+
+        return [
+
+            cleanText
+
+        ];
+
+    }
+
+
+    const words =
+
+        cleanText.split(
+
+            " "
+
+        );
 
 
     const lines = [];
@@ -1755,21 +1799,6 @@ function createLabelElement(
                 "map-label-line";
 
 
-            lineElement.style.whiteSpace =
-
-                "nowrap";
-
-
-            lineElement.style.wordBreak =
-
-                "normal";
-
-
-            lineElement.style.overflowWrap =
-
-                "normal";
-
-
             lineElement.textContent =
 
                 line;
@@ -1798,17 +1827,14 @@ function createLabelElement(
 function updateMapLabels() {
 
 
-    // ALWAYS CLEAR EXISTING LABELS FIRST
-
     clearLabels();
 
 
-    // IF CHECKBOX IS MISSING OR UNCHECKED,
-    // DO NOT CREATE ANY LABELS
-
     if (
 
-        !showLabelsCheckbox ||
+        showLabelsCheckbox
+
+        &&
 
         !showLabelsCheckbox.checked
 
@@ -3578,33 +3604,66 @@ function updateMap() {
 
 
 // =========================================================
-// ZOOM TO SELECTION
+// ZOOM TO CURRENT SELECTION
 // =========================================================
 
 function zoomToSelection() {
 
 
-    const {
+    const regionCode =
 
-        level
+        String(
 
-    } =
+            regionSelect.value
 
-        getCurrentRecords();
+        );
+
+
+    const provinceCode =
+
+        String(
+
+            provinceSelect.value
+
+        );
+
+
+    const municipalityCode =
+
+        String(
+
+            municipalitySelect.value
+
+        );
+
+
+    const barangayCode =
+
+        String(
+
+            barangaySelect.value
+
+        );
 
 
     let layerId;
 
+    let propertyName;
 
     let targetCode;
 
 
-    let propertyName;
-
+    // =========================================
+    // REGION
+    // =========================================
 
     if (
 
-        level === "provinces"
+        regionCode !== ""
+
+        &&
+
+        provinceCode === ""
 
     ) {
 
@@ -3614,25 +3673,29 @@ function zoomToSelection() {
             "regions-fill";
 
 
-        targetCode =
-
-            String(
-
-                regionSelect.value
-
-            );
-
-
         propertyName =
 
             "adm1_psgc";
 
+
+        targetCode =
+
+            regionCode;
+
     }
 
 
+    // =========================================
+    // PROVINCE
+    // =========================================
+
     else if (
 
-        level === "municipalities"
+        provinceCode !== ""
+
+        &&
+
+        municipalityCode === ""
 
     ) {
 
@@ -3642,82 +3705,81 @@ function zoomToSelection() {
             "provinces-fill";
 
 
-        targetCode =
-
-            String(
-
-                provinceSelect.value
-
-            );
-
-
         propertyName =
 
             "adm2_psgc";
 
+
+        targetCode =
+
+            provinceCode;
+
     }
 
 
+    // =========================================
+    // MUNICIPALITY
+    // =========================================
+
     else if (
 
-        level === "barangays"
+        municipalityCode !== ""
+
+        &&
+
+        barangayCode === ""
 
     ) {
 
 
-        if (
+        layerId =
 
-            barangaySelect.value !== ""
-
-        ) {
+            "municipalities-fill";
 
 
-            layerId =
+        propertyName =
 
-                "barangays-fill";
-
-
-            targetCode =
-
-                String(
-
-                    barangaySelect.value
-
-                );
+            "adm3_psgc";
 
 
-            propertyName =
+        targetCode =
 
-                "adm4_psgc";
-
-        }
-
-
-        else {
-
-
-            layerId =
-
-                "municipalities-fill";
-
-
-            targetCode =
-
-                String(
-
-                    municipalitySelect.value
-
-                );
-
-
-            propertyName =
-
-                "adm3_psgc";
-
-        }
+            municipalityCode;
 
     }
 
+
+    // =========================================
+    // BARANGAY
+    // =========================================
+
+    else if (
+
+        barangayCode !== ""
+
+    ) {
+
+
+        layerId =
+
+            "barangays-fill";
+
+
+        propertyName =
+
+            "adm4_psgc";
+
+
+        targetCode =
+
+            barangayCode;
+
+    }
+
+
+    // =========================================
+    // NO SELECTION
+    // =========================================
 
     else {
 
@@ -3764,21 +3826,49 @@ function zoomToSelection() {
     }
 
 
+    const layer =
+
+        map.getStyle().layers.find(
+
+            layer =>
+
+                layer.id ===
+
+                layerId
+
+        );
+
+
+    if (
+
+        !layer
+
+    ) {
+
+
+        console.warn(
+
+            "Layer not found for zoom."
+
+        );
+
+
+        return;
+
+    }
+
+
     const features =
 
-        map.queryRenderedFeatures(
+        map.querySourceFeatures(
 
-            undefined,
+            layer.source,
 
             {
 
-                layers:
+                sourceLayer:
 
-                    [
-
-                        layerId
-
-                    ]
+                    layer["source-layer"]
 
             }
 
@@ -4136,7 +4226,7 @@ indicatorSelect.addEventListener(
 
 
 // =========================================================
-// SHOW / HIDE ADMINISTRATIVE LABELS
+// LABEL CHECKBOX
 // =========================================================
 
 if (
@@ -4153,7 +4243,24 @@ if (
         () => {
 
 
-            updateMapLabels();
+            if (
+
+                showLabelsCheckbox.checked
+
+            ) {
+
+
+                updateMapLabels();
+
+            }
+
+
+            else {
+
+
+                clearLabels();
+
+            }
 
         }
 
