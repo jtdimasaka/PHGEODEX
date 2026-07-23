@@ -2,32 +2,315 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>PHGEODEX</title>
+
+
+  <!-- MapLibre CSS -->
 
   <link
     href="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.css"
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="style.css">
+
+  <!-- Your CSS -->
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
 
 <body>
 
-  <p>
-    Philippine Geospatial Exposure Database Using Census Data
-    Across Administrative Levels
-  </p>
 
-  <div id="map"></div>
+  <!-- =============================== -->
+  <!-- HEADER -->
+  <!-- =============================== -->
 
-  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pmtiles@latest/dist/pmtiles.js"></script>
+  <div id="header">
 
-  <script src="app.js"></script>
+
+    <h1>
+      PHGEODEX
+    </h1>
+
+
+    <p>
+      Philippine Geospatial Exposure Database Using Census Data
+      Across Administrative Levels
+    </p>
+
+
+    <!-- =============================== -->
+    <!-- INDICATOR SELECTOR -->
+    <!-- =============================== -->
+
+    <div class="control-group">
+
+      <label
+        for="indicator-select"
+      >
+        Indicator:
+      </label>
+
+
+      <select
+        id="indicator-select"
+      >
+
+        <option
+          value="C1"
+        >
+          C1
+        </option>
+
+
+        <option
+          value="CHBMWS"
+        >
+          CHBMWS
+        </option>
+
+
+        <option
+          value="CWS"
+        >
+          CWS
+        </option>
+
+
+        <option
+          value="N"
+        >
+          N
+        </option>
+
+
+        <option
+          value="S1"
+        >
+          S1
+        </option>
+
+
+        <option
+          value="S3"
+        >
+          S3
+        </option>
+
+
+        <option
+          value="URA"
+        >
+          URA
+        </option>
+
+
+        <option
+          value="URM"
+        >
+          URM
+        </option>
+
+
+        <option
+          value="W1W3"
+        >
+          W1W3
+        </option>
+
+
+        <option
+          value="W2"
+        >
+          W2
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <!-- =============================== -->
+    <!-- CASCADING ADMINISTRATIVE FILTERS -->
+    <!-- =============================== -->
+
+    <div
+      id="admin-controls"
+    >
+
+
+      <!-- REGION -->
+
+      <div
+        class="admin-control"
+      >
+
+        <label
+          for="region-select"
+        >
+          Region:
+        </label>
+
+
+        <select
+          id="region-select"
+        >
+
+          <option
+            value=""
+          >
+            ALL
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- PROVINCE -->
+
+      <div
+        class="admin-control"
+      >
+
+        <label
+          for="province-select"
+        >
+          Province:
+        </label>
+
+
+        <select
+          id="province-select"
+        >
+
+          <option
+            value=""
+          >
+            ALL
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- MUNICIPALITY / CITY -->
+
+      <div
+        class="admin-control"
+      >
+
+        <label
+          for="municipality-select"
+        >
+          Municipality / City:
+        </label>
+
+
+        <select
+          id="municipality-select"
+        >
+
+          <option
+            value=""
+          >
+            ALL
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- BARANGAY -->
+
+      <div
+        class="admin-control"
+      >
+
+        <label
+          for="barangay-select"
+        >
+          Barangay:
+        </label>
+
+
+        <select
+          id="barangay-select"
+        >
+
+          <option
+            value=""
+          >
+            ALL
+          </option>
+
+        </select>
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+  <!-- =============================== -->
+  <!-- MAP -->
+  <!-- =============================== -->
+
+  <div
+    id="map"
+  ></div>
+
+
+  <!-- =============================== -->
+  <!-- MAPLIBRE JS -->
+  <!-- =============================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.js"
+    defer
+  >
+  </script>
+
+
+  <!-- =============================== -->
+  <!-- PMTILES JS -->
+  <!-- =============================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/pmtiles@latest/dist/pmtiles.js"
+    defer
+  >
+  </script>
+
+
+  <!-- =============================== -->
+  <!-- YOUR APPLICATION JS -->
+  <!-- =============================== -->
+
+  <script
+    src="app.js"
+    defer
+  >
+  </script>
+
 
 </body>
 
