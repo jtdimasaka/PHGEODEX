@@ -2857,6 +2857,87 @@ indicatorSelect.addEventListener(
 
 );
 
+// =========================================================
+// LEGEND
+// =========================================================
+
+const legendToggle =
+  document.getElementById(
+
+    "legend-toggle"
+
+  );
+
+
+const legendContent =
+  document.getElementById(
+
+    "legend-content"
+
+  );
+
+
+const legendArrow =
+  document.getElementById(
+
+    "legend-arrow"
+
+  );
+
+
+const legendIndicatorTitle =
+  document.getElementById(
+
+    "legend-indicator-title"
+
+  );
+
+
+legendToggle.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    const isVisible =
+
+      legendContent.style.display !==
+      "none";
+
+
+    if (
+
+      isVisible
+
+    ) {
+
+
+      legendContent.style.display =
+        "none";
+
+
+      legendArrow.textContent =
+        "▼";
+
+    }
+
+
+    else {
+
+
+      legendContent.style.display =
+        "block";
+
+
+      legendArrow.textContent =
+        "▲";
+
+    }
+
+  }
+
+);
 
 // =========================================================
 // POPUPS
