@@ -5,27 +5,17 @@
 
   <meta charset="UTF-8">
 
-
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
 
-
-  <title>
-    PHGEODEX
-  </title>
-
-
-  <!-- MapLibre CSS -->
+  <title>PHGEODEX</title>
 
   <link
     href="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.css"
     rel="stylesheet"
   >
-
-
-  <!-- Your CSS -->
 
   <link
     rel="stylesheet"
@@ -38,17 +28,13 @@
 <body>
 
 
-  <!-- =============================== -->
   <!-- HEADER -->
-  <!-- =============================== -->
 
   <div id="header">
-
 
     <h1>
       PHGEODEX
     </h1>
-
 
     <p>
       Philippine Geospatial Exposure Database Using Census Data
@@ -56,324 +42,156 @@
     </p>
 
 
-    <!-- =============================== -->
     <!-- INDICATOR SELECTOR -->
-    <!-- =============================== -->
 
     <div class="control-group">
 
-
-      <label
-        for="indicator-select"
-      >
-
+      <label for="indicator-select">
         Indicator:
-
       </label>
 
+      <select id="indicator-select">
 
-      <select
-        id="indicator-select"
-      >
-
-
-        <option
-          value="C1"
-        >
-
-          C1
-
-        </option>
-
-
-        <option
-          value="CHBMWS"
-        >
-
-          CHBMWS
-
-        </option>
-
-
-        <option
-          value="CWS"
-        >
-
-          CWS
-
-        </option>
-
-
-        <option
-          value="N"
-        >
-
-          N
-
-        </option>
-
-
-        <option
-          value="S1"
-        >
-
-          S1
-
-        </option>
-
-
-        <option
-          value="S3"
-        >
-
-          S3
-
-        </option>
-
-
-        <option
-          value="URA"
-        >
-
-          URA
-
-        </option>
-
-
-        <option
-          value="URM"
-        >
-
-          URM
-
-        </option>
-
-
-        <option
-          value="W1W3"
-        >
-
-          W1W3
-
-        </option>
-
-
-        <option
-          value="W2"
-        >
-
-          W2
-
-        </option>
-
+        <option value="C1">C1</option>
+        <option value="CHBMWS">CHBMWS</option>
+        <option value="CWS">CWS</option>
+        <option value="N">N</option>
+        <option value="S1">S1</option>
+        <option value="S3">S3</option>
+        <option value="URA">URA</option>
+        <option value="URM">URM</option>
+        <option value="W1W3">W1W3</option>
+        <option value="W2">W2</option>
 
       </select>
 
-
     </div>
 
 
-    <!-- =============================== -->
-    <!-- CASCADING ADMINISTRATIVE FILTERS -->
-    <!-- =============================== -->
+    <!-- ADMINISTRATIVE FILTERS -->
 
-    <div
-      id="admin-controls"
-    >
+    <div id="admin-controls">
 
 
-      <!-- REGION -->
+      <div class="admin-control">
 
-      <div
-        class="admin-control"
-      >
-
-
-        <label
-          for="region-select"
-        >
-
+        <label for="region-select">
           Region:
-
         </label>
 
+        <select id="region-select">
 
-        <select
-          id="region-select"
-        >
-
-
-          <option
-            value=""
-          >
-
+          <option value="">
             ALL
-
           </option>
 
-
         </select>
-
 
       </div>
 
 
-      <!-- PROVINCE -->
+      <div class="admin-control">
 
-      <div
-        class="admin-control"
-      >
-
-
-        <label
-          for="province-select"
-        >
-
+        <label for="province-select">
           Province:
-
         </label>
 
+        <select id="province-select">
 
-        <select
-          id="province-select"
-        >
-
-
-          <option
-            value=""
-          >
-
+          <option value="">
             ALL
-
           </option>
 
-
         </select>
-
 
       </div>
 
 
-      <!-- MUNICIPALITY / CITY -->
+      <div class="admin-control">
 
-      <div
-        class="admin-control"
-      >
-
-
-        <label
-          for="municipality-select"
-        >
-
+        <label for="municipality-select">
           Municipality / City:
-
         </label>
 
+        <select id="municipality-select">
 
-        <select
-          id="municipality-select"
-        >
-
-
-          <option
-            value=""
-          >
-
+          <option value="">
             ALL
-
           </option>
 
-
         </select>
-
 
       </div>
 
 
-      <!-- BARANGAY -->
+      <div class="admin-control">
 
-      <div
-        class="admin-control"
-      >
-
-
-        <label
-          for="barangay-select"
-        >
-
+        <label for="barangay-select">
           Barangay:
-
         </label>
 
+        <select id="barangay-select">
 
-        <select
-          id="barangay-select"
-        >
-
-
-          <option
-            value=""
-          >
-
+          <option value="">
             ALL
-
           </option>
 
-
         </select>
-
 
       </div>
 
 
     </div>
-
 
   </div>
 
 
-  <!-- =============================== -->
   <!-- MAP -->
-  <!-- =============================== -->
 
-  <div
-    id="map"
-  >
+  <div id="map">
 
 
-    <!-- =============================== -->
+    <!-- ADMINISTRATIVE LABEL CHECKBOX -->
+
+    <div
+      id="label-toggle-container"
+      class="label-toggle-container"
+    >
+
+      <label>
+
+        <input
+          type="checkbox"
+          id="show-labels-checkbox"
+          checked
+        >
+
+        Show administrative labels
+
+      </label>
+
+    </div>
+
+
     <!-- COLLAPSIBLE LEGEND -->
-    <!-- =============================== -->
 
     <div
       id="legend"
       class="legend"
     >
 
-
       <button
         id="legend-toggle"
         class="legend-toggle"
       >
 
-
-        <span
-          id="legend-title"
-        >
-
+        <span id="legend-title">
           Legend
-
         </span>
 
-
-        <span
-          id="legend-arrow"
-        >
-
+        <span id="legend-arrow">
           ▲
-
         </span>
-
 
       </button>
 
@@ -383,167 +201,102 @@
         class="legend-content"
       >
 
-
-        <!-- INDICATOR NAME -->
-
         <div
           id="legend-indicator-title"
           class="legend-indicator-title"
         >
-
           C1
-
         </div>
 
 
-        <!-- CLASS 1 -->
-
-        <div
-          class="legend-item"
-        >
-
+        <div class="legend-item">
 
           <span
             class="legend-color"
             style="background:#440154"
           ></span>
 
-
-          <span
-            id="legend-label-0"
-          ></span>
-
+          <span id="legend-label-0"></span>
 
         </div>
 
 
-        <!-- CLASS 2 -->
-
-        <div
-          class="legend-item"
-        >
-
+        <div class="legend-item">
 
           <span
             class="legend-color"
             style="background:#3B528B"
           ></span>
 
-
-          <span
-            id="legend-label-1"
-          ></span>
-
+          <span id="legend-label-1"></span>
 
         </div>
 
 
-        <!-- CLASS 3 -->
-
-        <div
-          class="legend-item"
-        >
-
+        <div class="legend-item">
 
           <span
             class="legend-color"
             style="background:#21918C"
           ></span>
 
-
-          <span
-            id="legend-label-2"
-          ></span>
-
+          <span id="legend-label-2"></span>
 
         </div>
 
 
-        <!-- CLASS 4 -->
-
-        <div
-          class="legend-item"
-        >
-
+        <div class="legend-item">
 
           <span
             class="legend-color"
             style="background:#5EC962"
           ></span>
 
-
-          <span
-            id="legend-label-3"
-          ></span>
-
+          <span id="legend-label-3"></span>
 
         </div>
 
 
-        <!-- CLASS 5 -->
-
-        <div
-          class="legend-item"
-        >
-
+        <div class="legend-item">
 
           <span
             class="legend-color"
             style="background:#FDE725"
           ></span>
 
-
-          <span
-            id="legend-label-4"
-          ></span>
-
+          <span id="legend-label-4"></span>
 
         </div>
 
-
       </div>
 
-
     </div>
-
 
   </div>
 
 
-  <!-- =============================== -->
   <!-- MAPLIBRE JS -->
-  <!-- =============================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.js"
     defer
-  >
-
-  </script>
+  ></script>
 
 
-  <!-- =============================== -->
   <!-- PMTILES JS -->
-  <!-- =============================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/pmtiles@latest/dist/pmtiles.js"
     defer
-  >
-
-  </script>
+  ></script>
 
 
-  <!-- =============================== -->
-  <!-- YOUR APPLICATION JS -->
-  <!-- =============================== -->
+  <!-- APPLICATION JS -->
 
   <script
     src="app.js"
     defer
-  >
-
-  </script>
+  ></script>
 
 
 </body>

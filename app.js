@@ -1080,6 +1080,930 @@ const indicatorSelect =
 
 
 // =========================================================
+// ADMINISTRATIVE LABEL CHECKBOX
+// =========================================================
+
+const showLabelsCheckbox =
+
+    document.getElementById(
+
+        "show-labels-checkbox"
+
+    );
+
+
+// =========================================================
+// LABEL STORAGE
+// =========================================================
+
+let mapLabels = [];
+
+
+// =========================================================
+// CLEAR MAP LABELS
+// =========================================================
+
+function clearLabels() {
+
+
+    mapLabels.forEach(
+
+        marker => {
+
+
+            marker.remove();
+
+        }
+
+    );
+
+
+    mapLabels = [];
+
+}
+
+
+// =========================================================
+// GET CURRENT LABEL LEVEL
+// =========================================================
+
+function getLabelLevel() {
+
+
+    const regionCode =
+
+        regionSelect.value;
+
+
+    const provinceCode =
+
+        provinceSelect.value;
+
+
+    const municipalityCode =
+
+        municipalitySelect.value;
+
+
+    const barangayCode =
+
+        barangaySelect.value;
+
+
+    if (
+
+        barangayCode !== ""
+
+    ) {
+
+
+        return {
+
+            layer:
+
+                "barangays-fill",
+
+            nameField:
+
+                "adm4_en",
+
+            codeField:
+
+                "adm4_psgc"
+
+        };
+
+    }
+
+
+    if (
+
+        municipalityCode !== ""
+
+    ) {
+
+
+        return {
+
+            layer:
+
+                "barangays-fill",
+
+            nameField:
+
+                "adm4_en",
+
+            codeField:
+
+                "adm4_psgc"
+
+        };
+
+    }
+
+
+    if (
+
+        provinceCode !== ""
+
+    ) {
+
+
+        return {
+
+            layer:
+
+                "municipalities-fill",
+
+            nameField:
+
+                "adm3_en",
+
+            codeField:
+
+                "adm3_psgc"
+
+        };
+
+    }
+
+
+    if (
+
+        regionCode !== ""
+
+    ) {
+
+
+        return {
+
+            layer:
+
+                "provinces-fill",
+
+            nameField:
+
+                "adm2_en",
+
+            codeField:
+
+                "adm2_psgc"
+
+        };
+
+    }
+
+
+    return {
+
+        layer:
+
+            "regions-fill",
+
+        nameField:
+
+            "adm1_en",
+
+        codeField:
+
+            "adm1_psgc"
+
+    };
+
+}
+
+
+// =========================================================
+// CALCULATE POLYGON CENTROID
+// =========================================================
+
+function getPolygonCentroid(
+
+    geometry
+
+) {
+
+
+    let coordinates = [];
+
+
+    if (
+
+        geometry.type ===
+
+        "Polygon"
+
+    ) {
+
+
+        coordinates =
+
+            geometry.coordinates[0];
+
+    }
+
+
+    else if (
+
+        geometry.type ===
+
+        "MultiPolygon"
+
+    ) {
+
+
+        let largestRing =
+
+            null;
+
+
+        let largestArea =
+
+            0;
+
+
+        geometry.coordinates.forEach(
+
+            polygon => {
+
+
+                const ring =
+
+                    polygon[0];
+
+
+                let area =
+
+                    0;
+
+
+                for (
+
+                    let i = 0;
+
+                    i < ring.length - 1;
+
+                    i++
+
+                ) {
+
+
+                    const x1 =
+
+                        ring[i][0];
+
+
+                    const y1 =
+
+                        ring[i][1];
+
+
+                    const x2 =
+
+                        ring[i + 1][0];
+
+
+                    const y2 =
+
+                        ring[i + 1][1];
+
+
+                    area +=
+
+                        Math.abs(
+
+                            x1 * y2 -
+
+                            x2 * y1
+
+                        );
+
+                }
+
+
+                if (
+
+                    area >
+
+                    largestArea
+
+                ) {
+
+
+                    largestArea =
+
+                        area;
+
+
+                    largestRing =
+
+                        ring;
+
+                }
+
+            }
+
+        );
+
+
+        coordinates =
+
+            largestRing;
+
+    }
+
+
+    if (
+
+        !coordinates ||
+
+        coordinates.length === 0
+
+    ) {
+
+
+        return null;
+
+    }
+
+
+    let x =
+
+        0;
+
+
+    let y =
+
+        0;
+
+
+    let area =
+
+        0;
+
+
+    for (
+
+        let i =
+
+            0;
+
+        i <
+
+            coordinates.length - 1;
+
+        i++
+
+    ) {
+
+
+        const x1 =
+
+            coordinates[i][0];
+
+
+        const y1 =
+
+            coordinates[i][1];
+
+
+        const x2 =
+
+            coordinates[i + 1][0];
+
+
+        const y2 =
+
+            coordinates[i + 1][1];
+
+
+        const cross =
+
+            x1 *
+
+            y2
+
+            -
+
+            x2 *
+
+            y1;
+
+
+        area +=
+
+            cross;
+
+
+        x +=
+
+            (
+
+                x1 +
+
+                x2
+
+            )
+
+            *
+
+            cross;
+
+
+        y +=
+
+            (
+
+                y1 +
+
+                y2
+
+            )
+
+            *
+
+            cross;
+
+    }
+
+
+    area /=
+
+        2;
+
+
+    if (
+
+        area ===
+
+        0
+
+    ) {
+
+
+        return coordinates[0];
+
+    }
+
+
+    x /=
+
+        6 *
+
+        area;
+
+
+    y /=
+
+        6 *
+
+        area;
+
+
+    return [
+
+        x,
+
+        y
+
+    ];
+
+}
+
+
+// =========================================================
+// FORMAT LABEL TEXT
+// =========================================================
+
+function formatLabelText(
+
+    text,
+
+    maxCharacters = 8
+
+) {
+
+
+    const words =
+
+        String(
+
+            text
+
+        )
+
+            .trim()
+
+            .split(
+
+                /\s+/
+
+            );
+
+
+    const lines = [];
+
+
+    let currentLine = "";
+
+
+    words.forEach(
+
+        word => {
+
+
+            if (
+
+                currentLine === ""
+
+            ) {
+
+
+                currentLine =
+
+                    word;
+
+
+                return;
+
+            }
+
+
+            const proposedLine =
+
+                currentLine
+
+                +
+
+                " "
+
+                +
+
+                word;
+
+
+            if (
+
+                proposedLine.length <=
+
+                maxCharacters
+
+            ) {
+
+
+                currentLine =
+
+                    proposedLine;
+
+            }
+
+
+            else {
+
+
+                lines.push(
+
+                    currentLine
+
+                );
+
+
+                currentLine =
+
+                    word;
+
+            }
+
+        }
+
+    );
+
+
+    if (
+
+        currentLine !== ""
+
+    ) {
+
+
+        lines.push(
+
+            currentLine
+
+        );
+
+    }
+
+
+    return lines;
+
+}
+
+
+// =========================================================
+// CREATE LABEL ELEMENT
+// =========================================================
+
+function createLabelElement(
+
+    name
+
+) {
+
+
+    const labelElement =
+
+        document.createElement(
+
+            "div"
+
+        );
+
+
+    labelElement.className =
+
+        "map-label";
+
+
+    const lines =
+
+        formatLabelText(
+
+            name,
+
+            8
+
+        );
+
+
+    lines.forEach(
+
+        line => {
+
+
+            const lineElement =
+
+                document.createElement(
+
+                    "div"
+
+                );
+
+
+            lineElement.className =
+
+                "map-label-line";
+
+
+            lineElement.style.whiteSpace =
+
+                "nowrap";
+
+
+            lineElement.style.wordBreak =
+
+                "normal";
+
+
+            lineElement.style.overflowWrap =
+
+                "normal";
+
+
+            lineElement.textContent =
+
+                line;
+
+
+            labelElement.appendChild(
+
+                lineElement
+
+            );
+
+        }
+
+    );
+
+
+    return labelElement;
+
+}
+
+
+// =========================================================
+// UPDATE MAP LABELS
+// =========================================================
+
+function updateMapLabels() {
+
+
+    // ALWAYS CLEAR EXISTING LABELS FIRST
+
+    clearLabels();
+
+
+    // IF CHECKBOX IS MISSING OR UNCHECKED,
+    // DO NOT CREATE ANY LABELS
+
+    if (
+
+        !showLabelsCheckbox ||
+
+        !showLabelsCheckbox.checked
+
+    ) {
+
+
+        return;
+
+    }
+
+
+    const {
+
+        layer,
+
+        nameField,
+
+        codeField
+
+    } =
+
+        getLabelLevel();
+
+
+    const features =
+
+        map.queryRenderedFeatures(
+
+            undefined,
+
+            {
+
+                layers:
+
+                    [
+
+                        layer
+
+                    ]
+
+            }
+
+        );
+
+
+    const uniqueFeatures =
+
+        new Map();
+
+
+    features.forEach(
+
+        feature => {
+
+
+            const properties =
+
+                feature.properties;
+
+
+            const code =
+
+                String(
+
+                    properties[
+
+                        codeField
+
+                    ]
+
+                );
+
+
+            if (
+
+                !uniqueFeatures.has(
+
+                    code
+
+                )
+
+            ) {
+
+
+                uniqueFeatures.set(
+
+                    code,
+
+                    feature
+
+                );
+
+            }
+
+        }
+
+    );
+
+
+    uniqueFeatures.forEach(
+
+        feature => {
+
+
+            const properties =
+
+                feature.properties;
+
+
+            const name =
+
+                properties[
+
+                    nameField
+
+                ];
+
+
+            const center =
+
+                getPolygonCentroid(
+
+                    feature.geometry
+
+                );
+
+
+            if (
+
+                !center ||
+
+                !name
+
+            ) {
+
+
+                return;
+
+            }
+
+
+            const labelElement =
+
+                createLabelElement(
+
+                    name
+
+                );
+
+
+            const marker =
+
+                new maplibregl.Marker(
+
+                    {
+
+                        element:
+
+                            labelElement,
+
+                        anchor:
+
+                            "center"
+
+                    }
+
+                )
+
+                    .setLngLat(
+
+                        center
+
+                    )
+
+                    .addTo(
+
+                        map
+
+                    );
+
+
+            mapLabels.push(
+
+                marker
+
+            );
+
+        }
+
+    );
+
+}
+
+
+// =========================================================
 // ADMIN HIERARCHY
 // =========================================================
 
@@ -1203,20 +2127,6 @@ function addOption(
 
 // =========================================================
 // UPDATE SELECTOR ENABLE/DISABLE STATES
-// =========================================================
-//
-// Region:
-//     always enabled
-//
-// Province:
-//     enabled only after a specific region
-//
-// Municipality:
-//     enabled only after a specific province
-//
-// Barangay:
-//     enabled only after a specific municipality
-//
 // =========================================================
 
 function updateSelectorStates() {
@@ -2657,6 +3567,9 @@ function updateMap() {
 
             updateDynamicJenks();
 
+
+            updateMapLabels();
+
         }
 
     );
@@ -3223,6 +4136,33 @@ indicatorSelect.addEventListener(
 
 
 // =========================================================
+// SHOW / HIDE ADMINISTRATIVE LABELS
+// =========================================================
+
+if (
+
+    showLabelsCheckbox
+
+) {
+
+
+    showLabelsCheckbox.addEventListener(
+
+        "change",
+
+        () => {
+
+
+            updateMapLabels();
+
+        }
+
+    );
+
+}
+
+
+// =========================================================
 // UPDATE LEGEND
 // =========================================================
 
@@ -3622,6 +4562,24 @@ if (
     );
 
 }
+
+
+// =========================================================
+// UPDATE LABELS WHEN MAP MOVES
+// =========================================================
+
+map.on(
+
+    "moveend",
+
+    () => {
+
+
+        updateMapLabels();
+
+    }
+
+);
 
 
 // =========================================================
