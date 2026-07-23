@@ -1520,10 +1520,6 @@ function getCurrentRecords() {
         );
 
 
-    // =====================================================
-    // BARANGAY SELECTED
-    // =====================================================
-
     if (
         barangayCode !== ""
     ) {
@@ -1541,10 +1537,6 @@ function getCurrentRecords() {
 
     }
 
-
-    // =====================================================
-    // MUNICIPALITY SELECTED
-    // =====================================================
 
     if (
         municipalityCode !== ""
@@ -1564,10 +1556,6 @@ function getCurrentRecords() {
     }
 
 
-    // =====================================================
-    // PROVINCE SELECTED
-    // =====================================================
-
     if (
         provinceCode !== ""
     ) {
@@ -1586,10 +1574,6 @@ function getCurrentRecords() {
     }
 
 
-    // =====================================================
-    // REGION SELECTED
-    // =====================================================
-
     if (
         regionCode !== ""
     ) {
@@ -1607,10 +1591,6 @@ function getCurrentRecords() {
 
     }
 
-
-    // =====================================================
-    // ALL SELECTED
-    // =====================================================
 
     return {
 
@@ -1648,10 +1628,6 @@ function updateDynamicJenks() {
         `${level}-fill`;
 
 
-    // =====================================================
-    // GET ACTUAL VISIBLE FEATURES
-    // =====================================================
-
     const features =
         map.queryRenderedFeatures(
 
@@ -1669,10 +1645,6 @@ function updateDynamicJenks() {
 
         );
 
-
-    // =====================================================
-    // GET INDICATOR VALUES
-    // =====================================================
 
     const values =
         features
@@ -1726,10 +1698,6 @@ function updateDynamicJenks() {
     );
 
 
-    // =====================================================
-    // NO VALUES
-    // =====================================================
-
     if (
         values.length === 0
     ) {
@@ -1746,10 +1714,6 @@ function updateDynamicJenks() {
 
     }
 
-
-    // =====================================================
-    // CALCULATE JENKS
-    // =====================================================
 
     const breaks =
         calculateJenks(
@@ -1789,10 +1753,6 @@ function updateDynamicJenks() {
     }
 
 
-    // =====================================================
-    // CREATE COLOR EXPRESSION
-    // =====================================================
-
     const expression =
         createJenksExpression(
 
@@ -1802,10 +1762,6 @@ function updateDynamicJenks() {
 
         );
 
-
-    // =====================================================
-    // APPLY COLOR EXPRESSION
-    // =====================================================
 
     map.setPaintProperty(
 
@@ -1828,10 +1784,6 @@ function updateDynamicJenks() {
 
     );
 
-
-    // =====================================================
-    // UPDATE LEGEND
-    // =====================================================
 
     updateLegend(
 
@@ -1877,10 +1829,6 @@ function updateMapFilters() {
         );
 
 
-    // =====================================================
-    // REGIONS
-    // =====================================================
-
     map.setFilter(
 
         "regions-fill",
@@ -1898,10 +1846,6 @@ function updateMapFilters() {
 
     );
 
-
-    // =====================================================
-    // PROVINCES
-    // =====================================================
 
     if (
 
@@ -2017,10 +1961,6 @@ function updateMapFilters() {
     }
 
 
-    // =====================================================
-    // MUNICIPALITIES
-    // =====================================================
-
     if (
 
         provinceCode === ""
@@ -2134,10 +2074,6 @@ function updateMapFilters() {
 
     }
 
-
-    // =====================================================
-    // BARANGAYS
-    // =====================================================
 
     if (
 
@@ -2346,16 +2282,8 @@ function updateMap() {
     ];
 
 
-    // =====================================================
-    // APPLY FILTERS FIRST
-    // =====================================================
-
     updateMapFilters();
 
-
-    // =====================================================
-    // SHOW ONLY ACTIVE ADMINISTRATIVE LEVEL
-    // =====================================================
 
     levels.forEach(
 
@@ -2408,10 +2336,6 @@ function updateMap() {
     );
 
 
-    // =====================================================
-    // WAIT FOR FILTERS TO RENDER
-    // =====================================================
-
     map.once(
 
         "idle",
@@ -2452,10 +2376,6 @@ function zoomToSelection() {
     let propertyName;
 
 
-    // =====================================================
-    // REGION SELECTED
-    // =====================================================
-
     if (
 
         level === "provinces"
@@ -2481,10 +2401,6 @@ function zoomToSelection() {
     }
 
 
-    // =====================================================
-    // PROVINCE SELECTED
-    // =====================================================
-
     else if (
 
         level === "municipalities"
@@ -2509,10 +2425,6 @@ function zoomToSelection() {
 
     }
 
-
-    // =====================================================
-    // MUNICIPALITY OR BARANGAY
-    // =====================================================
 
     else if (
 
@@ -2569,10 +2481,6 @@ function zoomToSelection() {
     }
 
 
-    // =====================================================
-    // ALL PHILIPPINES
-    // =====================================================
-
     else {
 
 
@@ -2616,10 +2524,6 @@ function zoomToSelection() {
 
     }
 
-
-    // =====================================================
-    // QUERY VISIBLE FEATURE
-    // =====================================================
 
     const features =
         map.queryRenderedFeatures(
@@ -3011,10 +2915,6 @@ function updateLegend(
     }
 
 
-    // =====================================================
-    // ACTUAL MINIMUM AND MAXIMUM OF CURRENT MAP FEATURES
-    // =====================================================
-
     const minValue =
         Math.min(
 
@@ -3159,6 +3059,23 @@ function updateLegend(
 // =========================================================
 // FORMAT LEGEND VALUE
 // =========================================================
+//
+// IMPORTANT:
+// The underlying values remain exactly as they are.
+// This function ONLY controls how values are displayed.
+// It does NOT affect Jenks calculations or map colors.
+//
+// Uses up to 4 significant figures for small values.
+// Examples:
+//
+// 0.000123  -> 0.000123
+// 0.00123   -> 0.00123
+// 0.0123    -> 0.0123
+// 0.123     -> 0.123
+// 3.8       -> 3.8
+// 42.2      -> 42.2
+//
+// =========================================================
 
 function formatLegendValue(
 
@@ -3167,15 +3084,57 @@ function formatLegendValue(
 ) {
 
 
-    return Number(
+    const numericValue =
+        Number(
+            value
+        );
 
-        value
 
-    ).toFixed(
+    if (
 
-        1
+        !Number.isFinite(
+            numericValue
+        )
 
-    );
+    ) {
+
+        return "";
+
+    }
+
+
+    if (
+
+        numericValue === 0
+
+    ) {
+
+        return "0";
+
+    }
+
+
+    return numericValue.toPrecision(
+
+        4
+
+    )
+
+        .replace(
+
+            /(?:\.0+|(\.\d+?)0+)(?=e|$)/,
+
+            "$1"
+
+        )
+
+        .replace(
+
+            /e\+?/,
+
+            "e"
+
+        );
 
 }
 
