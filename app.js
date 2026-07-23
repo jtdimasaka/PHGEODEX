@@ -587,6 +587,185 @@ const indicatorSelect =
 
 
 // =========================================================
+// LEGEND SELECTORS
+// =========================================================
+
+const legendToggle =
+  document.getElementById(
+
+    "legend-toggle"
+
+  );
+
+
+const legendContent =
+  document.getElementById(
+
+    "legend-content"
+
+  );
+
+
+const legendArrow =
+  document.getElementById(
+
+    "legend-arrow"
+
+  );
+
+
+const legendIndicatorTitle =
+  document.getElementById(
+
+    "legend-indicator-title"
+
+  );
+
+
+const legendLabel0 =
+  document.getElementById(
+
+    "legend-label-0"
+
+  );
+
+
+const legendLabel1 =
+  document.getElementById(
+
+    "legend-label-1"
+
+  );
+
+
+const legendLabel2 =
+  document.getElementById(
+
+    "legend-label-2"
+
+  );
+
+
+const legendLabel3 =
+  document.getElementById(
+
+    "legend-label-3"
+
+  );
+
+
+const legendLabel4 =
+  document.getElementById(
+
+    "legend-label-4"
+
+  );
+
+
+// =========================================================
+// LEGEND TOGGLE
+// =========================================================
+
+legendToggle.addEventListener(
+
+  "click",
+
+  () => {
+
+
+    const isVisible =
+
+      legendContent.style.display !==
+      "none";
+
+
+    if (
+
+      isVisible
+
+    ) {
+
+
+      legendContent.style.display =
+        "none";
+
+
+      legendArrow.textContent =
+        "▼";
+
+    }
+
+
+    else {
+
+
+      legendContent.style.display =
+        "block";
+
+
+      legendArrow.textContent =
+        "▲";
+
+    }
+
+  }
+
+);
+
+
+// =========================================================
+// UPDATE LEGEND
+// =========================================================
+
+function updateLegend(
+
+  indicator
+
+) {
+
+
+  const breaks =
+    jenksBreaks[indicator];
+
+
+  if (
+
+    !breaks
+
+  ) {
+
+    return;
+
+  }
+
+
+  legendIndicatorTitle.textContent =
+    indicator;
+
+
+  legendLabel0.textContent =
+    `0–${breaks[0]}%`;
+
+
+  legendLabel1.textContent =
+    `${breaks[0]}–${breaks[1]}%`;
+
+
+  legendLabel2.textContent =
+    `${breaks[1]}–${breaks[2]}%`;
+
+
+  legendLabel3.textContent =
+    `${breaks[2]}–${breaks[3]}%`;
+
+
+  legendLabel4.textContent =
+    `>${breaks[3]}%`;
+
+}
+
+
+// =========================================================
 // ADMINISTRATIVE HIERARCHY
 // =========================================================
 
@@ -1413,10 +1592,6 @@ regionSelect.addEventListener(
     clearAllFilters();
 
 
-    // =================================================
-    // ALL REGIONS
-    // =================================================
-
     if (
 
       regionCode === ""
@@ -1479,10 +1654,6 @@ regionSelect.addEventListener(
     }
 
 
-    // =================================================
-    // SELECTED REGION
-    // =================================================
-
     setLayerVisibility(
 
       "regions",
@@ -1519,9 +1690,6 @@ regionSelect.addEventListener(
     );
 
 
-    // All regions remain visible,
-    // but are subdued.
-
     setLayerOpacity(
 
       "regions",
@@ -1533,8 +1701,6 @@ regionSelect.addEventListener(
     );
 
 
-    // Provinces are prominent.
-
     setLayerOpacity(
 
       "provinces",
@@ -1545,9 +1711,6 @@ regionSelect.addEventListener(
 
     );
 
-
-    // Only provinces belonging
-    // to the selected region.
 
     setLevelFilter(
 
@@ -1658,10 +1821,6 @@ provinceSelect.addEventListener(
 
     clearAllFilters();
 
-
-    // =================================================
-    // PROVINCE = ALL
-    // =================================================
 
     if (
 
@@ -1817,10 +1976,6 @@ provinceSelect.addEventListener(
     }
 
 
-    // =================================================
-    // SPECIFIC PROVINCE
-    // =================================================
-
     setLayerVisibility(
 
       "regions",
@@ -1890,8 +2045,6 @@ provinceSelect.addEventListener(
     );
 
 
-    // Show only selected province
-
     setLevelFilter(
 
       "provinces",
@@ -1920,8 +2073,6 @@ provinceSelect.addEventListener(
 
     );
 
-
-    // Show only municipalities in province
 
     setLevelFilter(
 
@@ -2042,10 +2193,6 @@ municipalitySelect.addEventListener(
 
     clearAllFilters();
 
-
-    // =================================================
-    // MUNICIPALITY = ALL
-    // =================================================
 
     if (
 
@@ -2241,10 +2388,6 @@ municipalitySelect.addEventListener(
     }
 
 
-    // =================================================
-    // SPECIFIC MUNICIPALITY
-    // =================================================
-
     setLayerVisibility(
 
       "regions",
@@ -2325,8 +2468,6 @@ municipalitySelect.addEventListener(
     );
 
 
-    // Only selected municipality
-
     setLevelFilter(
 
       "municipalities",
@@ -2355,8 +2496,6 @@ municipalitySelect.addEventListener(
 
     );
 
-
-    // Only barangays inside municipality
 
     setLevelFilter(
 
@@ -2457,7 +2596,6 @@ barangaySelect.addEventListener(
 
     ) {
 
-
       return;
 
     }
@@ -2542,8 +2680,6 @@ barangaySelect.addEventListener(
 
     );
 
-
-    // Show only selected barangay
 
     setLevelFilter(
 
@@ -2853,91 +2989,28 @@ indicatorSelect.addEventListener(
 
     );
 
-  }
 
-);
+    updateLegend(
 
-// =========================================================
-// LEGEND
-// =========================================================
+      indicator
 
-const legendToggle =
-  document.getElementById(
-
-    "legend-toggle"
-
-  );
-
-
-const legendContent =
-  document.getElementById(
-
-    "legend-content"
-
-  );
-
-
-const legendArrow =
-  document.getElementById(
-
-    "legend-arrow"
-
-  );
-
-
-const legendIndicatorTitle =
-  document.getElementById(
-
-    "legend-indicator-title"
-
-  );
-
-
-legendToggle.addEventListener(
-
-  "click",
-
-  () => {
-
-
-    const isVisible =
-
-      legendContent.style.display !==
-      "none";
-
-
-    if (
-
-      isVisible
-
-    ) {
-
-
-      legendContent.style.display =
-        "none";
-
-
-      legendArrow.textContent =
-        "▼";
-
-    }
-
-
-    else {
-
-
-      legendContent.style.display =
-        "block";
-
-
-      legendArrow.textContent =
-        "▲";
-
-    }
+    );
 
   }
 
 );
+
+
+// =========================================================
+// INITIAL LEGEND
+// =========================================================
+
+updateLegend(
+
+  indicatorSelect.value
+
+);
+
 
 // =========================================================
 // POPUPS

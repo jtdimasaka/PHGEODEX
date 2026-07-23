@@ -5,12 +5,16 @@
 
   <meta charset="UTF-8">
 
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>PHGEODEX</title>
+
+  <title>
+    PHGEODEX
+  </title>
 
 
   <!-- MapLibre CSS -->
@@ -58,10 +62,13 @@
 
     <div class="control-group">
 
+
       <label
         for="indicator-select"
       >
+
         Indicator:
+
       </label>
 
 
@@ -69,76 +76,99 @@
         id="indicator-select"
       >
 
+
         <option
           value="C1"
         >
+
           C1
+
         </option>
 
 
         <option
           value="CHBMWS"
         >
+
           CHBMWS
+
         </option>
 
 
         <option
           value="CWS"
         >
+
           CWS
+
         </option>
 
 
         <option
           value="N"
         >
+
           N
+
         </option>
 
 
         <option
           value="S1"
         >
+
           S1
+
         </option>
 
 
         <option
           value="S3"
         >
+
           S3
+
         </option>
 
 
         <option
           value="URA"
         >
+
           URA
+
         </option>
 
 
         <option
           value="URM"
         >
+
           URM
+
         </option>
 
 
         <option
           value="W1W3"
         >
+
           W1W3
+
         </option>
 
 
         <option
           value="W2"
         >
+
           W2
+
         </option>
 
+
       </select>
+
 
     </div>
 
@@ -158,10 +188,13 @@
         class="admin-control"
       >
 
+
         <label
           for="region-select"
         >
+
           Region:
+
         </label>
 
 
@@ -169,13 +202,18 @@
           id="region-select"
         >
 
+
           <option
             value=""
           >
+
             ALL
+
           </option>
 
+
         </select>
+
 
       </div>
 
@@ -186,10 +224,13 @@
         class="admin-control"
       >
 
+
         <label
           for="province-select"
         >
+
           Province:
+
         </label>
 
 
@@ -197,13 +238,18 @@
           id="province-select"
         >
 
+
           <option
             value=""
           >
+
             ALL
+
           </option>
 
+
         </select>
+
 
       </div>
 
@@ -214,10 +260,13 @@
         class="admin-control"
       >
 
+
         <label
           for="municipality-select"
         >
+
           Municipality / City:
+
         </label>
 
 
@@ -225,13 +274,18 @@
           id="municipality-select"
         >
 
+
           <option
             value=""
           >
+
             ALL
+
           </option>
 
+
         </select>
+
 
       </div>
 
@@ -242,10 +296,13 @@
         class="admin-control"
       >
 
+
         <label
           for="barangay-select"
         >
+
           Barangay:
+
         </label>
 
 
@@ -253,13 +310,18 @@
           id="barangay-select"
         >
 
+
           <option
             value=""
           >
+
             ALL
+
           </option>
 
+
         </select>
+
 
       </div>
 
@@ -274,117 +336,178 @@
   <!-- MAP -->
   <!-- =============================== -->
 
-    <div id="map">
-
-        <!-- Map controls -->
-
-        <div id="legend" class="legend">
-
-            <button
-            id="legend-toggle"
-            class="legend-toggle"
-            >
-
-            <span id="legend-title">
-                Legend
-            </span>
-
-            <span id="legend-arrow">
-                ▲
-            </span>
-
-            </button>
+  <div
+    id="map"
+  >
 
 
-            <div
-            id="legend-content"
-            class="legend-content"
-            >
+    <!-- =============================== -->
+    <!-- COLLAPSIBLE LEGEND -->
+    <!-- =============================== -->
 
-            <div
-                id="legend-indicator-title"
-                class="legend-indicator-title"
-            >
-
-                C1
-
-            </div>
+    <div
+      id="legend"
+      class="legend"
+    >
 
 
-            <div class="legend-item">
-
-                <span
-                class="legend-color"
-                style="background:#440154"
-                ></span>
-
-                <span>
-                0–12
-                </span>
-
-            </div>
+      <button
+        id="legend-toggle"
+        class="legend-toggle"
+      >
 
 
-            <div class="legend-item">
+        <span
+          id="legend-title"
+        >
 
-                <span
-                class="legend-color"
-                style="background:#3B528B"
-                ></span>
+          Legend
 
-                <span>
-                12–28
-                </span>
-
-            </div>
+        </span>
 
 
-            <div class="legend-item">
+        <span
+          id="legend-arrow"
+        >
 
-                <span
-                class="legend-color"
-                style="background:#21918C"
-                ></span>
+          ▲
 
-                <span>
-                28–47
-                </span>
-
-            </div>
+        </span>
 
 
-            <div class="legend-item">
-
-                <span
-                class="legend-color"
-                style="background:#5EC962"
-                ></span>
-
-                <span>
-                47–71
-                </span>
-
-            </div>
+      </button>
 
 
-            <div class="legend-item">
+      <div
+        id="legend-content"
+        class="legend-content"
+      >
 
-                <span
-                class="legend-color"
-                style="background:#FDE725"
-                ></span>
 
-                <span>
-                >71
-                </span>
+        <!-- INDICATOR NAME -->
 
-            </div>
+        <div
+          id="legend-indicator-title"
+          class="legend-indicator-title"
+        >
 
-            </div>
+          C1
 
         </div>
 
+
+        <!-- CLASS 1 -->
+
+        <div
+          class="legend-item"
+        >
+
+
+          <span
+            class="legend-color"
+            style="background:#440154"
+          ></span>
+
+
+          <span
+            id="legend-label-0"
+          ></span>
+
+
+        </div>
+
+
+        <!-- CLASS 2 -->
+
+        <div
+          class="legend-item"
+        >
+
+
+          <span
+            class="legend-color"
+            style="background:#3B528B"
+          ></span>
+
+
+          <span
+            id="legend-label-1"
+          ></span>
+
+
+        </div>
+
+
+        <!-- CLASS 3 -->
+
+        <div
+          class="legend-item"
+        >
+
+
+          <span
+            class="legend-color"
+            style="background:#21918C"
+          ></span>
+
+
+          <span
+            id="legend-label-2"
+          ></span>
+
+
+        </div>
+
+
+        <!-- CLASS 4 -->
+
+        <div
+          class="legend-item"
+        >
+
+
+          <span
+            class="legend-color"
+            style="background:#5EC962"
+          ></span>
+
+
+          <span
+            id="legend-label-3"
+          ></span>
+
+
+        </div>
+
+
+        <!-- CLASS 5 -->
+
+        <div
+          class="legend-item"
+        >
+
+
+          <span
+            class="legend-color"
+            style="background:#FDE725"
+          ></span>
+
+
+          <span
+            id="legend-label-4"
+          ></span>
+
+
+        </div>
+
+
+      </div>
+
+
     </div>
+
+
+  </div>
 
 
   <!-- =============================== -->
@@ -395,6 +518,7 @@
     src="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.js"
     defer
   >
+
   </script>
 
 
@@ -406,6 +530,7 @@
     src="https://cdn.jsdelivr.net/npm/pmtiles@latest/dist/pmtiles.js"
     defer
   >
+
   </script>
 
 
@@ -417,6 +542,7 @@
     src="app.js"
     defer
   >
+
   </script>
 
 
