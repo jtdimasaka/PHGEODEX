@@ -7,11 +7,8 @@ const protocol =
 
 
 maplibregl.addProtocol(
-
     "pmtiles",
-
     protocol.tile
-
 );
 
 
@@ -22,14 +19,11 @@ maplibregl.addProtocol(
 const regiUrl =
     "https://phgeodex-data.dimasakajoshua.workers.dev/2020regTaxonomy.pmtiles";
 
-
 const prvUrl =
     "https://phgeodex-data.dimasakajoshua.workers.dev/2020prvTaxonomy.pmtiles";
 
-
 const munUrl =
     "https://phgeodex-data.dimasakajoshua.workers.dev/2020munTaxonomy.pmtiles";
-
 
 const brgyUrl =
     "https://phgeodex-data.dimasakajoshua.workers.dev/2020brgyTaxonomy.pmtiles";
@@ -40,17 +34,11 @@ const brgyUrl =
 // =========================================================
 
 const jenksColors = [
-
     "#440154",
-
     "#3B528B",
-
     "#21918C",
-
     "#5EC962",
-
     "#FDE725"
-
 ];
 
 
@@ -59,63 +47,29 @@ const jenksColors = [
 // =========================================================
 
 function calculateJenks(
-
     values,
-
     numberOfClasses = 5
-
 ) {
 
-
     const cleanValues =
-
         values
-
             .map(
-
                 value =>
-
-                    Number(
-
-                        value
-
-                    )
-
+                    Number(value)
             )
-
             .filter(
-
                 value =>
-
-                    Number.isFinite(
-
-                        value
-
-                    )
-
+                    Number.isFinite(value)
             )
-
             .sort(
-
-                (
-
-                    a,
-
-                    b
-
-                ) =>
-
+                (a, b) =>
                     a - b
-
             );
 
 
     if (
-
         cleanValues.length === 0
-
     ) {
-
 
         return [];
 
@@ -123,96 +77,57 @@ function calculateJenks(
 
 
     const uniqueValues =
-
         [
-
-            ...new Set(
-
-                cleanValues
-
-            )
-
+            ...new Set(cleanValues)
         ];
 
 
     if (
-
         uniqueValues.length === 1
-
     ) {
 
-
         return [
-
             uniqueValues[0],
-
             uniqueValues[0],
-
             uniqueValues[0],
-
             uniqueValues[0]
-
         ];
 
     }
 
 
     if (
-
         uniqueValues.length <
-
         numberOfClasses
-
     ) {
-
 
         const breaks = [];
 
 
         for (
-
             let i = 1;
-
             i < numberOfClasses;
-
             i++
-
         ) {
 
-
             const position =
-
                 Math.floor(
-
                     (
-
                         i *
-
                         uniqueValues.length
-
                     )
-
                     /
-
                     numberOfClasses
-
                 );
 
 
             breaks.push(
-
                 uniqueValues[
-
                     Math.min(
-
                         position,
-
                         uniqueValues.length - 1
-
                     )
-
                 ]
-
             );
 
         }
@@ -224,150 +139,86 @@ function calculateJenks(
 
 
     const n =
-
         cleanValues.length;
 
 
     const lowerClassLimits =
-
         Array.from(
-
             {
-
                 length:
-
                     n + 1
-
             },
-
             () =>
-
                 Array(
-
                     numberOfClasses + 1
-
                 )
-
-                .fill(
-
-                    0
-
-                )
-
+                .fill(0)
         );
 
 
     const varianceCombinations =
-
         Array.from(
-
             {
-
                 length:
-
                     n + 1
-
             },
-
             () =>
-
                 Array(
-
                     numberOfClasses + 1
-
                 )
-
-                .fill(
-
-                    Infinity
-
-                )
-
+                .fill(Infinity)
         );
 
 
     for (
-
         let i = 1;
-
         i <= numberOfClasses;
-
         i++
-
     ) {
 
-
         lowerClassLimits[1][i] =
-
             1;
 
-
         varianceCombinations[1][i] =
-
             0;
 
     }
 
 
     for (
-
         let l = 2;
-
         l <= n;
-
         l++
-
     ) {
 
-
         let sum =
-
             0;
-
 
         let sumSquares =
-
             0;
-
 
         let w =
-
             0;
 
-
         let variance =
-
             0;
 
 
         for (
-
             let m = 1;
-
             m <= l;
-
             m++
-
         ) {
 
-
             const lowerClassLimit =
-
                 l -
-
                 m +
-
                 1;
 
 
             const value =
-
                 cleanValues[
-
-                    lowerClassLimit -
-
-                    1
-
+                    lowerClassLimit - 1
                 ];
 
 
@@ -375,92 +226,53 @@ function calculateJenks(
 
 
             sum +=
-
                 value;
 
 
             sumSquares +=
-
                 value *
-
                 value;
 
 
             variance =
-
-                sumSquares
-
-                -
-
+                sumSquares -
                 (
-
                     sum *
-
                     sum
-
                 )
-
                 /
-
                 w;
 
 
             if (
-
                 lowerClassLimit !== 1
-
             ) {
 
-
                 for (
-
                     let j = 2;
-
                     j <= numberOfClasses;
-
                     j++
-
                 ) {
 
-
                     if (
-
                         varianceCombinations[l][j]
-
                         >=
-
                         variance
-
                         +
-
                         varianceCombinations[
-
-                            lowerClassLimit -
-
-                            1
-
+                            lowerClassLimit - 1
                         ][j - 1]
-
                     ) {
 
-
                         lowerClassLimits[l][j] =
-
                             lowerClassLimit;
 
 
                         varianceCombinations[l][j] =
-
                             variance
-
                             +
-
                             varianceCombinations[
-
-                                lowerClassLimit -
-
-                                1
-
+                                lowerClassLimit - 1
                             ][j - 1];
 
                     }
@@ -473,81 +285,50 @@ function calculateJenks(
 
 
         lowerClassLimits[l][1] =
-
             1;
 
 
         varianceCombinations[l][1] =
-
             variance;
 
     }
 
 
     const breaks =
-
         Array(
-
             numberOfClasses - 1
-
         );
 
 
     let k =
-
         n;
 
 
     for (
-
-        let j =
-
-            numberOfClasses;
-
+        let j = numberOfClasses;
         j >= 2;
-
         j--
-
     ) {
 
-
         const id =
-
-            lowerClassLimits[k][j]
-
-            -
-
+            lowerClassLimits[k][j] -
             2;
 
 
         breaks[j - 2] =
-
             cleanValues[id];
 
 
         k =
-
-            lowerClassLimits[k][j]
-
-            -
-
+            lowerClassLimits[k][j] -
             1;
 
     }
 
 
     return breaks.sort(
-
-        (
-
-            a,
-
-            b
-
-        ) =>
-
+        (a, b) =>
             a - b
-
     );
 
 }
@@ -558,44 +339,31 @@ function calculateJenks(
 // =========================================================
 
 function createJenksExpression(
-
     indicator,
-
     breaks
-
 ) {
 
-
     return [
-
         "step",
 
         [
-
             "get",
-
             indicator
-
         ],
 
         jenksColors[0],
 
         breaks[0],
-
         jenksColors[1],
 
         breaks[1],
-
         jenksColors[2],
 
         breaks[2],
-
         jenksColors[3],
 
         breaks[3],
-
         jenksColors[4]
-
     ];
 
 }
@@ -606,25 +374,22 @@ function createJenksExpression(
 // =========================================================
 
 const map =
-
     new maplibregl.Map({
 
         container:
-
             "map",
 
         style: {
 
             version:
-
                 8,
+
 
             sources: {
 
                 basemap: {
 
                     type:
-
                         "raster",
 
                     tiles: [
@@ -634,11 +399,9 @@ const map =
                     ],
 
                     tileSize:
-
                         256,
 
                     attribution:
-
                         "© OpenStreetMap contributors © CARTO"
 
                 },
@@ -647,11 +410,9 @@ const map =
                 regions: {
 
                     type:
-
                         "vector",
 
                     url:
-
                         `pmtiles://${regiUrl}`
 
                 },
@@ -660,11 +421,9 @@ const map =
                 provinces: {
 
                     type:
-
                         "vector",
 
                     url:
-
                         `pmtiles://${prvUrl}`
 
                 },
@@ -673,11 +432,9 @@ const map =
                 municipalities: {
 
                     type:
-
                         "vector",
 
                     url:
-
                         `pmtiles://${munUrl}`
 
                 },
@@ -686,11 +443,9 @@ const map =
                 barangays: {
 
                     type:
-
                         "vector",
 
                     url:
-
                         `pmtiles://${brgyUrl}`
 
                 }
@@ -701,48 +456,36 @@ const map =
             layers: [
 
                 {
-
                     id:
-
                         "basemap",
 
                     type:
-
                         "raster",
 
                     source:
-
                         "basemap"
-
                 },
 
 
                 {
-
                     id:
-
                         "regions-fill",
 
                     type:
-
                         "fill",
 
                     source:
-
                         "regions",
 
                     "source-layer":
-
                         "regions",
 
                     paint: {
 
                         "fill-color":
-
                             "#FFFFFF",
 
                         "fill-opacity":
-
                             0
 
                     }
@@ -751,35 +494,27 @@ const map =
 
 
                 {
-
                     id:
-
                         "regions-outline",
 
                     type:
-
                         "line",
 
                     source:
-
                         "regions",
 
                     "source-layer":
-
                         "regions",
 
                     paint: {
 
                         "line-color":
-
                             "#333333",
 
                         "line-width":
-
                             1,
 
                         "line-opacity":
-
                             0
 
                     }
@@ -788,31 +523,24 @@ const map =
 
 
                 {
-
                     id:
-
                         "provinces-fill",
 
                     type:
-
                         "fill",
 
                     source:
-
                         "provinces",
 
                     "source-layer":
-
                         "provinces",
 
                     paint: {
 
                         "fill-color":
-
                             "#FFFFFF",
 
                         "fill-opacity":
-
                             0
 
                     }
@@ -821,35 +549,27 @@ const map =
 
 
                 {
-
                     id:
-
                         "provinces-outline",
 
                     type:
-
                         "line",
 
                     source:
-
                         "provinces",
 
                     "source-layer":
-
                         "provinces",
 
                     paint: {
 
                         "line-color":
-
                             "#333333",
 
                         "line-width":
-
                             1,
 
                         "line-opacity":
-
                             0
 
                     }
@@ -858,31 +578,24 @@ const map =
 
 
                 {
-
                     id:
-
                         "municipalities-fill",
 
                     type:
-
                         "fill",
 
                     source:
-
                         "municipalities",
 
                     "source-layer":
-
                         "municipalities",
 
                     paint: {
 
                         "fill-color":
-
                             "#FFFFFF",
 
                         "fill-opacity":
-
                             0
 
                     }
@@ -891,35 +604,27 @@ const map =
 
 
                 {
-
                     id:
-
                         "municipalities-outline",
 
                     type:
-
                         "line",
 
                     source:
-
                         "municipalities",
 
                     "source-layer":
-
                         "municipalities",
 
                     paint: {
 
                         "line-color":
-
                             "#333333",
 
                         "line-width":
-
                             1,
 
                         "line-opacity":
-
                             0
 
                     }
@@ -928,31 +633,24 @@ const map =
 
 
                 {
-
                     id:
-
                         "barangays-fill",
 
                     type:
-
                         "fill",
 
                     source:
-
                         "barangays",
 
                     "source-layer":
-
                         "barangays",
 
                     paint: {
 
                         "fill-color":
-
                             "#FFFFFF",
 
                         "fill-opacity":
-
                             0
 
                     }
@@ -961,35 +659,27 @@ const map =
 
 
                 {
-
                     id:
-
                         "barangays-outline",
 
                     type:
-
                         "line",
 
                     source:
-
                         "barangays",
 
                     "source-layer":
-
                         "barangays",
 
                     paint: {
 
                         "line-color":
-
                             "#333333",
 
                         "line-width":
-
                             0.5,
 
                         "line-opacity":
-
                             0
 
                     }
@@ -1002,18 +692,12 @@ const map =
 
 
         center:
-
             [
-
                 121,
-
                 12
-
             ],
 
-
         zoom:
-
             5
 
     });
@@ -1024,9 +708,7 @@ const map =
 // =========================================================
 
 map.addControl(
-
     new maplibregl.NavigationControl()
-
 );
 
 
@@ -1035,56 +717,33 @@ map.addControl(
 // =========================================================
 
 const regionSelect =
-
     document.getElementById(
-
         "region-select"
-
     );
-
 
 const provinceSelect =
-
     document.getElementById(
-
         "province-select"
-
     );
-
 
 const municipalitySelect =
-
     document.getElementById(
-
         "municipality-select"
-
     );
-
 
 const barangaySelect =
-
     document.getElementById(
-
         "barangay-select"
-
     );
-
 
 const indicatorSelect =
-
     document.getElementById(
-
         "indicator-select"
-
     );
 
-
 const showLabelsCheckbox =
-
     document.getElementById(
-
         "show-labels-checkbox"
-
     );
 
 
@@ -1096,23 +755,47 @@ let mapLabels = [];
 
 
 // =========================================================
+// ZOOM REQUEST ID
+// =========================================================
+//
+// This prevents an old pending zoom from
+// overriding a newer selection.
+//
+
+let zoomRequestId =
+    0;
+
+
+// =========================================================
+// PHILIPPINES DEFAULT BOUNDS
+// =========================================================
+
+const philippinesBounds = [
+
+    [
+        116.5,
+        4.5
+    ],
+
+    [
+        127.0,
+        21.5
+    ]
+
+];
+
+
+// =========================================================
 // CLEAR MAP LABELS
 // =========================================================
 
 function clearLabels() {
 
-
     mapLabels.forEach(
-
         marker => {
-
-
             marker.remove();
-
         }
-
     );
-
 
     mapLabels = [];
 
@@ -1125,46 +808,32 @@ function clearLabels() {
 
 function getLabelLevel() {
 
-
     const regionCode =
-
         regionSelect.value;
 
-
     const provinceCode =
-
         provinceSelect.value;
 
-
     const municipalityCode =
-
         municipalitySelect.value;
 
-
     const barangayCode =
-
         barangaySelect.value;
 
 
     if (
-
         barangayCode !== ""
-
     ) {
-
 
         return {
 
             layer:
-
                 "barangays-fill",
 
             nameField:
-
                 "adm4_en",
 
             codeField:
-
                 "adm4_psgc"
 
         };
@@ -1173,24 +842,18 @@ function getLabelLevel() {
 
 
     if (
-
         municipalityCode !== ""
-
     ) {
-
 
         return {
 
             layer:
-
                 "barangays-fill",
 
             nameField:
-
                 "adm4_en",
 
             codeField:
-
                 "adm4_psgc"
 
         };
@@ -1199,24 +862,18 @@ function getLabelLevel() {
 
 
     if (
-
         provinceCode !== ""
-
     ) {
-
 
         return {
 
             layer:
-
                 "municipalities-fill",
 
             nameField:
-
                 "adm3_en",
 
             codeField:
-
                 "adm3_psgc"
 
         };
@@ -1225,24 +882,18 @@ function getLabelLevel() {
 
 
     if (
-
         regionCode !== ""
-
     ) {
-
 
         return {
 
             layer:
-
                 "provinces-fill",
 
             nameField:
-
                 "adm2_en",
 
             codeField:
-
                 "adm2_psgc"
 
         };
@@ -1253,15 +904,12 @@ function getLabelLevel() {
     return {
 
         layer:
-
             "regions-fill",
 
         nameField:
-
             "adm1_en",
 
         codeField:
-
             "adm1_psgc"
 
     };
@@ -1270,153 +918,104 @@ function getLabelLevel() {
 
 
 // =========================================================
-// CALCULATE POLYGON CENTROID
+// POLYGON CENTROID
 // =========================================================
 
 function getPolygonCentroid(
-
     geometry
-
 ) {
-
 
     let coordinates = [];
 
 
     if (
-
         geometry.type ===
-
         "Polygon"
-
     ) {
 
-
         coordinates =
-
             geometry.coordinates[0];
 
     }
 
 
     else if (
-
         geometry.type ===
-
         "MultiPolygon"
-
     ) {
 
-
         let largestRing =
-
             null;
 
-
         let largestArea =
-
             0;
 
 
         geometry.coordinates.forEach(
-
             polygon => {
 
-
                 const ring =
-
                     polygon[0];
 
-
                 let area =
-
                     0;
 
 
                 for (
-
                     let i = 0;
-
                     i < ring.length - 1;
-
                     i++
-
                 ) {
 
-
                     const x1 =
-
                         ring[i][0];
 
-
                     const y1 =
-
                         ring[i][1];
 
-
                     const x2 =
-
                         ring[i + 1][0];
 
-
                     const y2 =
-
                         ring[i + 1][1];
 
 
                     area +=
-
                         Math.abs(
-
                             x1 * y2 -
-
                             x2 * y1
-
                         );
 
                 }
 
 
                 if (
-
                     area >
-
                     largestArea
-
                 ) {
 
-
                     largestArea =
-
                         area;
 
-
                     largestRing =
-
                         ring;
 
                 }
 
             }
-
         );
 
 
         coordinates =
-
             largestRing;
 
     }
 
 
     if (
-
         !coordinates ||
-
         coordinates.length === 0
-
     ) {
-
 
         return null;
 
@@ -1424,118 +1023,70 @@ function getPolygonCentroid(
 
 
     let x =
-
         0;
-
 
     let y =
-
         0;
 
-
     let area =
-
         0;
 
 
     for (
-
-        let i =
-
-            0;
-
-        i <
-
-        coordinates.length - 1;
-
+        let i = 0;
+        i < coordinates.length - 1;
         i++
-
     ) {
 
-
         const x1 =
-
             coordinates[i][0];
 
-
         const y1 =
-
             coordinates[i][1];
 
-
         const x2 =
-
             coordinates[i + 1][0];
 
-
         const y2 =
-
             coordinates[i + 1][1];
 
 
         const cross =
-
-            x1 *
-
-            y2
-
-            -
-
-            x2 *
-
-            y1;
+            x1 * y2 -
+            x2 * y1;
 
 
         area +=
-
             cross;
 
 
         x +=
-
             (
-
                 x1 +
-
                 x2
-
             )
-
             *
-
             cross;
 
 
         y +=
-
             (
-
                 y1 +
-
                 y2
-
             )
-
             *
-
             cross;
 
     }
 
 
     area /=
-
         2;
 
 
     if (
-
-        area ===
-
-        0
-
+        area === 0
     ) {
-
 
         return coordinates[0];
 
@@ -1543,25 +1094,16 @@ function getPolygonCentroid(
 
 
     x /=
-
-        6 *
-
-        area;
+        6 * area;
 
 
     y /=
-
-        6 *
-
-        area;
+        6 * area;
 
 
     return [
-
         x,
-
         y
-
     ];
 
 }
@@ -1571,102 +1113,64 @@ function getPolygonCentroid(
 // FORMAT LABEL TEXT
 // =========================================================
 //
-// Special handling:
-//
-// Region III
-// Region IV-A
-// Region IV-B
-// Region V
-//
-// These remain on one line.
-//
-// Other labels wrap only at spaces.
 // Words are never split.
+// "Region III" remains on one line.
 //
 
 function formatLabelText(
-
     text,
-
     maxCharacters = 8
-
 ) {
 
-
-    const cleanText =
-
-        String(
-
-            text
-
-        )
-
+    const normalizedText =
+        String(text)
             .trim()
-
             .replace(
-
                 /\s+/g,
-
                 " "
-
             );
 
 
-    // =========================================
-    // KEEP REGION NUMBERS TOGETHER
-    // =========================================
+    const regionMatch =
+        normalizedText.match(
+            /^Region\s+[IVXLCDM]+(?:\s+.*)?$/i
+        );
+
 
     if (
-
-        /^Region\s+[IVXLCDM]+(?:-[A-Z]+)?$/i.test(
-
-            cleanText
-
-        )
-
+        regionMatch
     ) {
 
-
         return [
-
-            cleanText
-
+            normalizedText
         ];
 
     }
 
 
     const words =
-
-        cleanText.split(
-
+        normalizedText.split(
             " "
-
         );
 
 
-    const lines = [];
+    const lines =
+        [];
 
 
-    let currentLine = "";
+    let currentLine =
+        "";
 
 
     words.forEach(
-
         word => {
 
-
             if (
-
                 currentLine === ""
-
             ) {
 
-
                 currentLine =
-
                     word;
-
 
                 return;
 
@@ -1674,29 +1178,19 @@ function formatLabelText(
 
 
             const proposedLine =
-
                 currentLine
-
                 +
-
                 " "
-
                 +
-
                 word;
 
 
             if (
-
                 proposedLine.length <=
-
                 maxCharacters
-
             ) {
 
-
                 currentLine =
-
                     proposedLine;
 
             }
@@ -1704,36 +1198,25 @@ function formatLabelText(
 
             else {
 
-
                 lines.push(
-
                     currentLine
-
                 );
 
-
                 currentLine =
-
                     word;
 
             }
 
         }
-
     );
 
 
     if (
-
         currentLine !== ""
-
     ) {
 
-
         lines.push(
-
             currentLine
-
         );
 
     }
@@ -1749,69 +1232,60 @@ function formatLabelText(
 // =========================================================
 
 function createLabelElement(
-
     name
-
 ) {
 
-
     const labelElement =
-
         document.createElement(
-
             "div"
-
         );
 
 
     labelElement.className =
-
         "map-label";
 
 
     const lines =
-
         formatLabelText(
-
             name,
-
             8
-
         );
 
 
     lines.forEach(
-
         line => {
 
-
             const lineElement =
-
                 document.createElement(
-
                     "div"
-
                 );
 
 
             lineElement.className =
-
                 "map-label-line";
 
 
-            lineElement.textContent =
+            lineElement.style.whiteSpace =
+                "nowrap";
 
+
+            lineElement.style.wordBreak =
+                "normal";
+
+
+            lineElement.style.overflowWrap =
+                "normal";
+
+
+            lineElement.textContent =
                 line;
 
 
             labelElement.appendChild(
-
                 lineElement
-
             );
 
         }
-
     );
 
 
@@ -1826,150 +1300,101 @@ function createLabelElement(
 
 function updateMapLabels() {
 
-
-    clearLabels();
-
-
     if (
-
-        showLabelsCheckbox
-
-        &&
-
+        !showLabelsCheckbox
+        ||
         !showLabelsCheckbox.checked
-
     ) {
 
+        clearLabels();
 
         return;
 
     }
 
 
+    clearLabels();
+
+
     const {
-
         layer,
-
         nameField,
-
         codeField
-
     } =
-
         getLabelLevel();
 
 
     const features =
-
         map.queryRenderedFeatures(
-
             undefined,
-
             {
-
                 layers:
-
                     [
-
                         layer
-
                     ]
-
             }
-
         );
 
 
     const uniqueFeatures =
-
         new Map();
 
 
     features.forEach(
-
         feature => {
 
-
             const properties =
-
                 feature.properties;
 
 
             const code =
-
                 String(
-
                     properties[
-
                         codeField
-
                     ]
-
                 );
 
 
             if (
-
                 !uniqueFeatures.has(
-
                     code
-
                 )
-
             ) {
 
-
                 uniqueFeatures.set(
-
                     code,
-
                     feature
-
                 );
 
             }
 
         }
-
     );
 
 
     uniqueFeatures.forEach(
-
         feature => {
 
-
             const properties =
-
                 feature.properties;
 
 
             const name =
-
                 properties[
-
                     nameField
-
                 ];
 
 
             const center =
-
                 getPolygonCentroid(
-
                     feature.geometry
-
                 );
 
 
             if (
-
                 !center ||
-
                 !name
-
             ) {
-
 
                 return;
 
@@ -1977,53 +1402,34 @@ function updateMapLabels() {
 
 
             const labelElement =
-
                 createLabelElement(
-
                     name
-
                 );
 
 
             const marker =
-
                 new maplibregl.Marker(
-
                     {
-
                         element:
-
                             labelElement,
 
                         anchor:
-
                             "center"
-
                     }
-
                 )
-
-                    .setLngLat(
-
-                        center
-
-                    )
-
-                    .addTo(
-
-                        map
-
-                    );
+                .setLngLat(
+                    center
+                )
+                .addTo(
+                    map
+                );
 
 
             mapLabels.push(
-
                 marker
-
             );
 
         }
-
     );
 
 }
@@ -2037,27 +1443,18 @@ let adminHierarchy;
 
 
 fetch(
-
     "adminHierarchy.json"
-
 )
 
     .then(
-
         response => {
 
-
             if (
-
                 !response.ok
-
             ) {
 
-
                 throw new Error(
-
                     "Could not load adminHierarchy.json"
-
                 );
 
             }
@@ -2066,16 +1463,12 @@ fetch(
             return response.json();
 
         }
-
     )
 
     .then(
-
         data => {
 
-
             adminHierarchy =
-
                 data;
 
 
@@ -2085,22 +1478,16 @@ fetch(
             updateMap();
 
         }
-
     )
 
     .catch(
-
         error => {
 
-
             console.error(
-
                 error
-
             );
 
         }
-
     );
 
 
@@ -2109,82 +1496,61 @@ fetch(
 // =========================================================
 
 function addOption(
-
     select,
-
     value,
-
     text
-
 ) {
 
-
     const option =
-
         document.createElement(
-
             "option"
-
         );
 
 
     option.value =
-
         String(
-
             value
-
         );
 
 
     option.textContent =
-
         text;
 
 
     select.appendChild(
-
         option
-
     );
 
 }
 
 
 // =========================================================
-// UPDATE SELECTOR ENABLE/DISABLE STATES
+// UPDATE SELECTOR STATES
 // =========================================================
 
 function updateSelectorStates() {
 
-
     const regionSelected =
-
         regionSelect.value !== "";
 
 
     const provinceSelected =
-
         provinceSelect.value !== "";
 
 
     const municipalitySelected =
-
         municipalitySelect.value !== "";
 
 
     provinceSelect.disabled =
-
         !regionSelected;
 
 
     municipalitySelect.disabled =
-
         !provinceSelected;
 
 
     barangaySelect.disabled =
-
         !municipalitySelected;
 
 }
@@ -2196,88 +1562,57 @@ function updateSelectorStates() {
 
 function populateRegions() {
 
-
     regionSelect.innerHTML =
-
         "";
 
 
     addOption(
-
         regionSelect,
-
         "",
-
         "ALL"
-
     );
 
 
     adminHierarchy.regions.forEach(
-
         region => {
 
-
             addOption(
-
                 regionSelect,
-
                 region.adm1_psgc,
-
                 region.adm1_en
-
             );
 
         }
-
     );
 
 
     provinceSelect.innerHTML =
-
         "";
 
-
     addOption(
-
         provinceSelect,
-
         "",
-
         "ALL"
-
     );
 
 
     municipalitySelect.innerHTML =
-
         "";
 
-
     addOption(
-
         municipalitySelect,
-
         "",
-
         "ALL"
-
     );
 
 
     barangaySelect.innerHTML =
-
         "";
 
-
     addOption(
-
         barangaySelect,
-
         "",
-
         "ALL"
-
     );
 
 
@@ -2291,115 +1626,74 @@ function populateRegions() {
 // =========================================================
 
 function populateProvinces(
-
     regionCode
-
 ) {
 
-
     provinceSelect.innerHTML =
-
         "";
 
 
     addOption(
-
         provinceSelect,
-
         "",
-
         "ALL"
-
     );
 
 
     municipalitySelect.innerHTML =
-
         "";
 
-
     addOption(
-
         municipalitySelect,
-
         "",
-
         "ALL"
-
     );
 
 
     barangaySelect.innerHTML =
-
         "";
 
-
     addOption(
-
         barangaySelect,
-
         "",
-
         "ALL"
-
     );
 
 
     let provinces =
-
         adminHierarchy.provinces;
 
 
     if (
-
         regionCode !== ""
-
     ) {
 
-
         provinces =
-
             provinces.filter(
-
                 province =>
 
-
                     String(
-
                         province.adm1_psgc
-
                     )
-
                     ===
-
                     String(
-
                         regionCode
-
                     )
-
             );
 
     }
 
 
     provinces.forEach(
-
         province => {
 
-
             addOption(
-
                 provinceSelect,
-
                 province.adm2_psgc,
-
                 province.adm2_en
-
             );
 
         }
-
     );
 
 
@@ -2413,134 +1707,86 @@ function populateProvinces(
 // =========================================================
 
 function populateMunicipalities(
-
     regionCode,
-
     provinceCode
-
 ) {
 
-
     municipalitySelect.innerHTML =
-
         "";
 
 
     addOption(
-
         municipalitySelect,
-
         "",
-
         "ALL"
-
     );
 
 
     barangaySelect.innerHTML =
-
         "";
 
 
     addOption(
-
         barangaySelect,
-
         "",
-
         "ALL"
-
     );
 
 
     let municipalities =
-
         adminHierarchy.municipalities;
 
 
     if (
-
         regionCode !== ""
-
     ) {
 
-
         municipalities =
-
             municipalities.filter(
-
                 municipality =>
 
-
                     String(
-
                         municipality.adm1_psgc
-
                     )
-
                     ===
-
                     String(
-
                         regionCode
-
                     )
-
             );
 
     }
 
 
     if (
-
         provinceCode !== ""
-
     ) {
 
-
         municipalities =
-
             municipalities.filter(
-
                 municipality =>
 
-
                     String(
-
                         municipality.adm2_psgc
-
                     )
-
                     ===
-
                     String(
-
                         provinceCode
-
                     )
-
             );
 
     }
 
 
     municipalities.forEach(
-
         municipality => {
 
-
             addOption(
-
                 municipalitySelect,
-
                 municipality.adm3_psgc,
-
                 municipality.adm3_en
-
             );
 
         }
-
     );
 
 
@@ -2554,153 +1800,96 @@ function populateMunicipalities(
 // =========================================================
 
 function populateBarangays(
-
     regionCode,
-
     provinceCode,
-
     municipalityCode
-
 ) {
 
-
     barangaySelect.innerHTML =
-
         "";
 
 
     addOption(
-
         barangaySelect,
-
         "",
-
         "ALL"
-
     );
 
 
     let barangays =
-
         adminHierarchy.barangays;
 
 
     if (
-
         regionCode !== ""
-
     ) {
 
-
         barangays =
-
             barangays.filter(
-
                 barangay =>
 
-
                     String(
-
                         barangay.adm1_psgc
-
                     )
-
                     ===
-
                     String(
-
                         regionCode
-
                     )
-
             );
 
     }
 
 
     if (
-
         provinceCode !== ""
-
     ) {
 
-
         barangays =
-
             barangays.filter(
-
                 barangay =>
 
-
                     String(
-
                         barangay.adm2_psgc
-
                     )
-
                     ===
-
                     String(
-
                         provinceCode
-
                     )
-
             );
 
     }
 
 
     if (
-
         municipalityCode !== ""
-
     ) {
 
-
         barangays =
-
             barangays.filter(
-
                 barangay =>
 
-
                     String(
-
                         barangay.adm3_psgc
-
                     )
-
                     ===
-
                     String(
-
                         municipalityCode
-
                     )
-
             );
 
     }
 
 
     barangays.forEach(
-
         barangay => {
 
-
             addOption(
-
                 barangaySelect,
-
                 barangay.adm4_psgc,
-
                 barangay.adm4_en
-
             );
 
         }
-
     );
 
 
@@ -2715,58 +1904,40 @@ function populateBarangays(
 
 function getCurrentRecords() {
 
-
     const regionCode =
-
         String(
-
             regionSelect.value
-
         );
 
 
     const provinceCode =
-
         String(
-
             provinceSelect.value
-
         );
 
 
     const municipalityCode =
-
         String(
-
             municipalitySelect.value
-
         );
 
 
     const barangayCode =
-
         String(
-
             barangaySelect.value
-
         );
 
 
     if (
-
         barangayCode !== ""
-
     ) {
-
 
         return {
 
             level:
-
                 "barangays",
 
             records:
-
                 []
 
         };
@@ -2775,20 +1946,15 @@ function getCurrentRecords() {
 
 
     if (
-
         municipalityCode !== ""
-
     ) {
-
 
         return {
 
             level:
-
                 "barangays",
 
             records:
-
                 []
 
         };
@@ -2797,20 +1963,15 @@ function getCurrentRecords() {
 
 
     if (
-
         provinceCode !== ""
-
     ) {
-
 
         return {
 
             level:
-
                 "municipalities",
 
             records:
-
                 []
 
         };
@@ -2819,20 +1980,15 @@ function getCurrentRecords() {
 
 
     if (
-
         regionCode !== ""
-
     ) {
-
 
         return {
 
             level:
-
                 "provinces",
 
             records:
-
                 []
 
         };
@@ -2843,11 +1999,9 @@ function getCurrentRecords() {
     return {
 
         level:
-
             "regions",
 
         records:
-
             []
 
     };
@@ -2861,93 +2015,57 @@ function getCurrentRecords() {
 
 function updateDynamicJenks() {
 
-
     const indicator =
-
         indicatorSelect.value;
 
 
     const {
-
         level
-
     } =
-
         getCurrentRecords();
 
 
     const activeFillLayer =
-
         `${level}-fill`;
 
 
     const features =
-
         map.queryRenderedFeatures(
-
             undefined,
-
             {
-
                 layers:
-
                     [
-
                         activeFillLayer
-
                     ]
-
             }
-
         );
 
 
     const values =
-
         features
-
             .map(
-
                 feature =>
-
                     Number(
-
                         feature.properties[
-
                             indicator
-
                         ]
-
                     )
-
             )
-
             .filter(
-
                 value =>
-
                     Number.isFinite(
-
                         value
-
                     )
-
             );
 
 
     if (
-
         values.length === 0
-
     ) {
 
-
         console.warn(
-
             "No valid values found for dynamic Jenks."
-
         );
-
 
         return;
 
@@ -2955,29 +2073,19 @@ function updateDynamicJenks() {
 
 
     const breaks =
-
         calculateJenks(
-
             values,
-
             5
-
         );
 
 
     if (
-
         breaks.length !== 4
-
     ) {
 
-
         console.warn(
-
             "Jenks did not return four breaks."
-
         );
-
 
         return;
 
@@ -2985,46 +2093,30 @@ function updateDynamicJenks() {
 
 
     const expression =
-
         createJenksExpression(
-
             indicator,
-
             breaks
-
         );
 
 
     map.setPaintProperty(
-
         activeFillLayer,
-
         "fill-color",
-
         expression
-
     );
 
 
     map.setPaintProperty(
-
         activeFillLayer,
-
         "fill-opacity",
-
         1.0
-
     );
 
 
     updateLegend(
-
         indicator,
-
         breaks,
-
         values
-
     );
 
 }
@@ -3036,111 +2128,69 @@ function updateDynamicJenks() {
 
 function updateMapFilters() {
 
-
     const regionCode =
-
         String(
-
             regionSelect.value
-
         );
 
 
     const provinceCode =
-
         String(
-
             provinceSelect.value
-
         );
 
 
     const municipalityCode =
-
         String(
-
             municipalitySelect.value
-
         );
 
 
     const barangayCode =
-
         String(
-
             barangaySelect.value
-
         );
 
 
     map.setFilter(
-
         "regions-fill",
-
         null
-
     );
 
 
     map.setFilter(
-
         "regions-outline",
-
         null
-
     );
 
 
     if (
-
         regionCode === ""
-
     ) {
 
-
         map.setFilter(
-
             "provinces-fill",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm1_psgc"
-
                 ],
-
                 -999999999
-
             ]
-
         );
 
 
         map.setFilter(
-
             "provinces-outline",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm1_psgc"
-
                 ],
-
                 -999999999
-
             ]
-
         );
 
     }
@@ -3148,113 +2198,65 @@ function updateMapFilters() {
 
     else {
 
-
         map.setFilter(
-
             "provinces-fill",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm1_psgc"
-
                 ],
-
                 Number(
-
                     regionCode
-
                 )
-
             ]
-
         );
 
 
         map.setFilter(
-
             "provinces-outline",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm1_psgc"
-
                 ],
-
                 Number(
-
                     regionCode
-
                 )
-
             ]
-
         );
 
     }
 
 
     if (
-
         provinceCode === ""
-
     ) {
 
-
         map.setFilter(
-
             "municipalities-fill",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm2_psgc"
-
                 ],
-
                 -999999999
-
             ]
-
         );
 
 
         map.setFilter(
-
             "municipalities-outline",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm2_psgc"
-
                 ],
-
                 -999999999
-
             ]
-
         );
 
     }
@@ -3262,176 +2264,101 @@ function updateMapFilters() {
 
     else {
 
-
         map.setFilter(
-
             "municipalities-fill",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm2_psgc"
-
                 ],
-
                 Number(
-
                     provinceCode
-
                 )
-
             ]
-
         );
 
 
         map.setFilter(
-
             "municipalities-outline",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm2_psgc"
-
                 ],
-
                 Number(
-
                     provinceCode
-
                 )
-
             ]
-
         );
 
     }
 
 
     if (
-
         municipalityCode === ""
-
     ) {
 
-
         map.setFilter(
-
             "barangays-fill",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm3_psgc"
-
                 ],
-
                 -999999999
-
             ]
-
         );
 
 
         map.setFilter(
-
             "barangays-outline",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm3_psgc"
-
                 ],
-
                 -999999999
-
             ]
-
         );
 
     }
 
 
     else if (
-
         barangayCode !== ""
-
     ) {
 
-
         map.setFilter(
-
             "barangays-fill",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm4_psgc"
-
                 ],
-
                 Number(
-
                     barangayCode
-
                 )
-
             ]
-
         );
 
 
         map.setFilter(
-
             "barangays-outline",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm4_psgc"
-
                 ],
-
                 Number(
-
                     barangayCode
-
                 )
-
             ]
-
         );
 
     }
@@ -3439,58 +2366,33 @@ function updateMapFilters() {
 
     else {
 
-
         map.setFilter(
-
             "barangays-fill",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm3_psgc"
-
                 ],
-
                 Number(
-
                     municipalityCode
-
                 )
-
             ]
-
         );
 
 
         map.setFilter(
-
             "barangays-outline",
-
             [
-
                 "==",
-
                 [
-
                     "get",
-
                     "adm3_psgc"
-
                 ],
-
                 Number(
-
                     municipalityCode
-
                 )
-
             ]
-
         );
 
     }
@@ -3504,24 +2406,17 @@ function updateMapFilters() {
 
 function updateMap() {
 
-
     const {
-
         level
-
     } =
-
         getCurrentRecords();
 
 
     const levels = [
 
         "regions",
-
         "provinces",
-
         "municipalities",
-
         "barangays"
 
     ];
@@ -3531,293 +2426,346 @@ function updateMap() {
 
 
     levels.forEach(
-
         currentLevel => {
 
-
             const fillLayer =
-
                 `${currentLevel}-fill`;
 
 
             const outlineLayer =
-
                 `${currentLevel}-outline`;
 
 
             const isActive =
-
-                currentLevel === level;
+                currentLevel ===
+                level;
 
 
             map.setPaintProperty(
-
                 fillLayer,
-
                 "fill-opacity",
-
                 isActive
-
                     ? 1.0
-
                     : 0
-
             );
 
 
             map.setPaintProperty(
-
                 outlineLayer,
-
                 "line-opacity",
-
                 isActive
-
                     ? 1.0
-
                     : 0
-
             );
 
         }
-
     );
 
 
     map.once(
-
         "idle",
-
         () => {
-
 
             updateDynamicJenks();
 
 
-            updateMapLabels();
+            if (
+                showLabelsCheckbox
+                &&
+                showLabelsCheckbox.checked
+            ) {
+
+                updateMapLabels();
+
+            }
+
+            else {
+
+                clearLabels();
+
+            }
 
         }
-
     );
 
 }
 
 
 // =========================================================
-// ZOOM TO CURRENT SELECTION
+// GET CURRENT ZOOM TARGET
 // =========================================================
 
-function zoomToSelection() {
-
+function getZoomTarget() {
 
     const regionCode =
-
         String(
-
             regionSelect.value
-
         );
 
 
     const provinceCode =
-
         String(
-
             provinceSelect.value
-
         );
 
 
     const municipalityCode =
-
         String(
-
             municipalitySelect.value
-
         );
 
 
     const barangayCode =
-
         String(
-
             barangaySelect.value
-
         );
 
 
-    let layerId;
+    if (
+        barangayCode !== ""
+    ) {
 
-    let propertyName;
+        return {
 
-    let targetCode;
+            sourceId:
+                "barangays",
 
+            sourceLayer:
+                "barangays",
 
-    // =========================================
-    // REGION
-    // =========================================
+            propertyName:
+                "adm4_psgc",
+
+            targetCode:
+                barangayCode
+
+        };
+
+    }
+
 
     if (
-
-        regionCode !== ""
-
-        &&
-
-        provinceCode === ""
-
-    ) {
-
-
-        layerId =
-
-            "regions-fill";
-
-
-        propertyName =
-
-            "adm1_psgc";
-
-
-        targetCode =
-
-            regionCode;
-
-    }
-
-
-    // =========================================
-    // PROVINCE
-    // =========================================
-
-    else if (
-
-        provinceCode !== ""
-
-        &&
-
-        municipalityCode === ""
-
-    ) {
-
-
-        layerId =
-
-            "provinces-fill";
-
-
-        propertyName =
-
-            "adm2_psgc";
-
-
-        targetCode =
-
-            provinceCode;
-
-    }
-
-
-    // =========================================
-    // MUNICIPALITY
-    // =========================================
-
-    else if (
-
         municipalityCode !== ""
-
-        &&
-
-        barangayCode === ""
-
     ) {
 
+        return {
 
-        layerId =
+            sourceId:
+                "municipalities",
 
-            "municipalities-fill";
+            sourceLayer:
+                "municipalities",
 
+            propertyName:
+                "adm3_psgc",
 
-        propertyName =
+            targetCode:
+                municipalityCode
 
-            "adm3_psgc";
-
-
-        targetCode =
-
-            municipalityCode;
+        };
 
     }
 
 
-    // =========================================
-    // BARANGAY
-    // =========================================
+    if (
+        provinceCode !== ""
+    ) {
+
+        return {
+
+            sourceId:
+                "provinces",
+
+            sourceLayer:
+                "provinces",
+
+            propertyName:
+                "adm2_psgc",
+
+            targetCode:
+                provinceCode
+
+        };
+
+    }
+
+
+    if (
+        regionCode !== ""
+    ) {
+
+        return {
+
+            sourceId:
+                "regions",
+
+            sourceLayer:
+                "regions",
+
+            propertyName:
+                "adm1_psgc",
+
+            targetCode:
+                regionCode
+
+        };
+
+    }
+
+
+    return null;
+
+}
+
+
+// =========================================================
+// EXTEND BOUNDS FROM GEOMETRY
+// =========================================================
+
+function extendBoundsFromGeometry(
+    bounds,
+    geometry
+) {
+
+    if (
+        !geometry
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        geometry.type ===
+        "Polygon"
+    ) {
+
+        geometry.coordinates.forEach(
+            ring => {
+
+                ring.forEach(
+                    coordinate => {
+
+                        bounds.extend(
+                            coordinate
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    }
+
 
     else if (
-
-        barangayCode !== ""
-
+        geometry.type ===
+        "MultiPolygon"
     ) {
 
+        geometry.coordinates.forEach(
+            polygon => {
 
-        layerId =
+                polygon.forEach(
+                    ring => {
 
-            "barangays-fill";
+                        ring.forEach(
+                            coordinate => {
 
+                                bounds.extend(
+                                    coordinate
+                                );
 
-        propertyName =
+                            }
+                        );
 
-            "adm4_psgc";
+                    }
+                );
 
-
-        targetCode =
-
-            barangayCode;
+            }
+        );
 
     }
 
+}
 
-    // =========================================
-    // NO SELECTION
-    // =========================================
 
-    else {
+// =========================================================
+// FIND SOURCE FEATURES
+// =========================================================
 
+function findMatchingSourceFeatures(
+    target
+) {
+
+    const features =
+        map.querySourceFeatures(
+            target.sourceId,
+            {
+                sourceLayer:
+                    target.sourceLayer
+            }
+        );
+
+
+    return features.filter(
+        feature =>
+
+            String(
+                feature.properties[
+                    target.propertyName
+                ]
+            )
+            ===
+            target.targetCode
+    );
+
+}
+
+
+// =========================================================
+// ZOOM TO SELECTION
+// =========================================================
+//
+// Important:
+//
+// 1. Cancel old zoom request.
+// 2. First try currently loaded source tiles.
+// 3. If target is not loaded, briefly reset to
+//    the Philippines extent.
+// 4. Wait for the new source tiles.
+// 5. Find the new target.
+// 6. Fit bounds to the new target.
+//
+// This prevents the previous region's bounds
+// from being reused.
+//
+
+function zoomToSelection() {
+
+    const requestId =
+        ++zoomRequestId;
+
+
+    const target =
+        getZoomTarget();
+
+
+    if (
+        !target
+    ) {
 
         map.fitBounds(
-
-            [
-
-                [
-
-                    116.5,
-
-                    4.5
-
-                ],
-
-                [
-
-                    127.0,
-
-                    21.5
-
-                ]
-
-            ],
-
+            philippinesBounds,
             {
-
                 padding:
-
                     50,
 
                 duration:
-
-                    1200
-
+                    600
             }
-
         );
 
 
@@ -3826,228 +2774,158 @@ function zoomToSelection() {
     }
 
 
-    const layer =
+    function fitToTarget() {
 
-        map.getStyle().layers.find(
+        if (
+            requestId !==
+            zoomRequestId
+        ) {
 
-            layer =>
-
-                layer.id ===
-
-                layerId
-
-        );
-
-
-    if (
-
-        !layer
-
-    ) {
-
-
-        console.warn(
-
-            "Layer not found for zoom."
-
-        );
-
-
-        return;
-
-    }
-
-
-    const features =
-
-        map.querySourceFeatures(
-
-            layer.source,
-
-            {
-
-                sourceLayer:
-
-                    layer["source-layer"]
-
-            }
-
-        );
-
-
-    const matchingFeatures =
-
-        features.filter(
-
-            feature =>
-
-
-                String(
-
-                    feature.properties[
-
-                        propertyName
-
-                    ]
-
-                )
-
-                ===
-
-                targetCode
-
-        );
-
-
-    if (
-
-        matchingFeatures.length === 0
-
-    ) {
-
-
-        console.warn(
-
-            "No matching feature found for zoom."
-
-        );
-
-
-        return;
-
-    }
-
-
-    const bounds =
-
-        new maplibregl.LngLatBounds();
-
-
-    matchingFeatures.forEach(
-
-        feature => {
-
-
-            const geometry =
-
-                feature.geometry;
-
-
-            if (
-
-                geometry.type ===
-
-                "Polygon"
-
-            ) {
-
-
-                geometry.coordinates.forEach(
-
-                    ring => {
-
-
-                        ring.forEach(
-
-                            coordinate => {
-
-
-                                bounds.extend(
-
-                                    coordinate
-
-                                );
-
-                            }
-
-                        );
-
-                    }
-
-                );
-
-            }
-
-
-            else if (
-
-                geometry.type ===
-
-                "MultiPolygon"
-
-            ) {
-
-
-                geometry.coordinates.forEach(
-
-                    polygon => {
-
-
-                        polygon.forEach(
-
-                            ring => {
-
-
-                                ring.forEach(
-
-                                    coordinate => {
-
-
-                                        bounds.extend(
-
-                                            coordinate
-
-                                        );
-
-                                    }
-
-                                );
-
-                            }
-
-                        );
-
-                    }
-
-                );
-
-            }
+            return;
 
         }
 
-    );
+
+        const matchingFeatures =
+            findMatchingSourceFeatures(
+                target
+            );
 
 
-    if (
+        if (
+            matchingFeatures.length === 0
+        ) {
 
-        !bounds.isEmpty()
+            console.warn(
+                "Target feature not currently loaded."
+            );
 
-    ) {
+            return;
+
+        }
+
+
+        const bounds =
+            new maplibregl.LngLatBounds();
+
+
+        matchingFeatures.forEach(
+            feature => {
+
+                extendBoundsFromGeometry(
+                    bounds,
+                    feature.geometry
+                );
+
+            }
+        );
+
+
+        if (
+            bounds.isEmpty()
+        ) {
+
+            console.warn(
+                "Target feature has empty bounds."
+            );
+
+            return;
+
+        }
 
 
         map.fitBounds(
-
             bounds,
-
             {
 
                 padding:
-
                     60,
 
                 duration:
-
                     1200,
 
                 maxZoom:
-
                     12
 
             }
-
         );
 
     }
+
+
+    // First try the currently loaded tiles.
+    const alreadyLoaded =
+        findMatchingSourceFeatures(
+            target
+        );
+
+
+    if (
+        alreadyLoaded.length > 0
+    ) {
+
+        fitToTarget();
+
+        return;
+
+    }
+
+
+    // The new selection may be outside the
+    // currently loaded viewport.
+    //
+    // Move immediately to the Philippines
+    // extent to force the relevant PMTiles
+    // source tiles to load.
+    map.fitBounds(
+        philippinesBounds,
+        {
+            padding:
+                20,
+
+            duration:
+                0
+        }
+    );
+
+
+    map.once(
+        "idle",
+        () => {
+
+            if (
+                requestId !==
+                zoomRequestId
+            ) {
+
+                return;
+
+            }
+
+
+            // Allow the PMTiles source one
+            // additional render cycle.
+            setTimeout(
+                () => {
+
+                    if (
+                        requestId !==
+                        zoomRequestId
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    fitToTarget();
+
+                },
+                100
+            );
+
+        }
+    );
 
 }
 
@@ -4057,37 +2935,20 @@ function zoomToSelection() {
 // =========================================================
 
 regionSelect.addEventListener(
-
     "change",
-
     () => {
 
-
         populateProvinces(
-
             regionSelect.value
-
         );
 
 
         updateMap();
 
 
-        map.once(
-
-            "idle",
-
-            () => {
-
-
-                zoomToSelection();
-
-            }
-
-        );
+        zoomToSelection();
 
     }
-
 );
 
 
@@ -4096,39 +2957,22 @@ regionSelect.addEventListener(
 // =========================================================
 
 provinceSelect.addEventListener(
-
     "change",
-
     () => {
 
-
         populateMunicipalities(
-
             regionSelect.value,
 
             provinceSelect.value
-
         );
 
 
         updateMap();
 
 
-        map.once(
-
-            "idle",
-
-            () => {
-
-
-                zoomToSelection();
-
-            }
-
-        );
+        zoomToSelection();
 
     }
-
 );
 
 
@@ -4137,41 +2981,24 @@ provinceSelect.addEventListener(
 // =========================================================
 
 municipalitySelect.addEventListener(
-
     "change",
-
     () => {
 
-
         populateBarangays(
-
             regionSelect.value,
 
             provinceSelect.value,
 
             municipalitySelect.value
-
         );
 
 
         updateMap();
 
 
-        map.once(
-
-            "idle",
-
-            () => {
-
-
-                zoomToSelection();
-
-            }
-
-        );
+        zoomToSelection();
 
     }
-
 );
 
 
@@ -4180,30 +3007,15 @@ municipalitySelect.addEventListener(
 // =========================================================
 
 barangaySelect.addEventListener(
-
     "change",
-
     () => {
-
 
         updateMap();
 
 
-        map.once(
-
-            "idle",
-
-            () => {
-
-
-                zoomToSelection();
-
-            }
-
-        );
+        zoomToSelection();
 
     }
-
 );
 
 
@@ -4212,16 +3024,12 @@ barangaySelect.addEventListener(
 // =========================================================
 
 indicatorSelect.addEventListener(
-
     "change",
-
     () => {
-
 
         updateMap();
 
     }
-
 );
 
 
@@ -4230,40 +3038,28 @@ indicatorSelect.addEventListener(
 // =========================================================
 
 if (
-
     showLabelsCheckbox
-
 ) {
 
-
     showLabelsCheckbox.addEventListener(
-
         "change",
-
         () => {
 
-
             if (
-
                 showLabelsCheckbox.checked
-
             ) {
-
 
                 updateMapLabels();
 
             }
 
-
             else {
-
 
                 clearLabels();
 
             }
 
         }
-
     );
 
 }
@@ -4274,78 +3070,51 @@ if (
 // =========================================================
 
 function updateLegend(
-
     indicator,
-
     breaks,
-
     values
-
 ) {
 
-
     const indicatorTitle =
-
         document.getElementById(
-
             "legend-indicator-title"
-
         );
 
 
     const labels = [
 
         document.getElementById(
-
             "legend-label-0"
-
         ),
 
         document.getElementById(
-
             "legend-label-1"
-
         ),
 
         document.getElementById(
-
             "legend-label-2"
-
         ),
 
         document.getElementById(
-
             "legend-label-3"
-
         ),
 
         document.getElementById(
-
             "legend-label-4"
-
         )
 
     ];
 
 
     if (
-
         !values
-
         ||
-
         values.length === 0
-
         ||
-
         !breaks
-
         ||
-
         breaks.length !== 4
-
     ) {
-
 
         return;
 
@@ -4353,142 +3122,92 @@ function updateLegend(
 
 
     const minValue =
-
         Math.min(
-
             ...values
-
         );
 
 
     const maxValue =
-
         Math.max(
-
             ...values
-
         );
 
 
     if (
-
         indicatorTitle
-
     ) {
 
-
         indicatorTitle.textContent =
-
             indicator;
 
     }
 
 
     if (
-
         labels[0]
-
     ) {
-
 
         labels[0].textContent =
-
             `${formatLegendValue(
-
                 minValue
-
             )}% – ${formatLegendValue(
-
                 breaks[0]
-
             )}%`;
 
     }
 
 
     if (
-
         labels[1]
-
     ) {
-
 
         labels[1].textContent =
-
             `${formatLegendValue(
-
                 breaks[0]
-
             )}% – ${formatLegendValue(
-
                 breaks[1]
-
             )}%`;
 
     }
 
 
     if (
-
         labels[2]
-
     ) {
-
 
         labels[2].textContent =
-
             `${formatLegendValue(
-
                 breaks[1]
-
             )}% – ${formatLegendValue(
-
                 breaks[2]
-
             )}%`;
 
     }
 
 
     if (
-
         labels[3]
-
     ) {
-
 
         labels[3].textContent =
-
             `${formatLegendValue(
-
                 breaks[2]
-
             )}% – ${formatLegendValue(
-
                 breaks[3]
-
             )}%`;
 
     }
 
 
     if (
-
         labels[4]
-
     ) {
 
-
         labels[4].textContent =
-
             `${formatLegendValue(
-
                 breaks[3]
-
             )}% – ${formatLegendValue(
-
                 maxValue
-
             )}%`;
 
     }
@@ -4501,31 +3220,20 @@ function updateLegend(
 // =========================================================
 
 function formatLegendValue(
-
     value
-
 ) {
 
-
     const numericValue =
-
         Number(
-
             value
-
         );
 
 
     if (
-
         !Number.isFinite(
-
             numericValue
-
         )
-
     ) {
-
 
         return "";
 
@@ -4533,11 +3241,8 @@ function formatLegendValue(
 
 
     if (
-
         numericValue === 0
-
     ) {
-
 
         return "0";
 
@@ -4545,27 +3250,16 @@ function formatLegendValue(
 
 
     return numericValue
-
         .toPrecision(
-
             4
-
         )
-
         .replace(
-
             /(?:\.0+|(\.\d+?)0+)(?=e|$)/,
-
             "$1"
-
         )
-
         .replace(
-
             /e\+?/,
-
             "e"
-
         );
 
 }
@@ -4576,75 +3270,49 @@ function formatLegendValue(
 // =========================================================
 
 const legendToggle =
-
     document.getElementById(
-
         "legend-toggle"
-
     );
 
 
 const legendContent =
-
     document.getElementById(
-
         "legend-content"
-
     );
 
 
 const legendArrow =
-
     document.getElementById(
-
         "legend-arrow"
-
     );
 
 
 if (
-
     legendToggle
-
     &&
-
     legendContent
-
     &&
-
     legendArrow
-
 ) {
 
-
     legendToggle.addEventListener(
-
         "click",
-
         () => {
 
-
             const isHidden =
-
                 legendContent.style.display ===
-
                 "none";
 
 
             if (
-
                 isHidden
-
             ) {
 
-
                 legendContent.style.display =
-
                     "block";
 
 
                 legendArrow.textContent =
-
                     "▲";
 
             }
@@ -4652,20 +3320,16 @@ if (
 
             else {
 
-
                 legendContent.style.display =
-
                     "none";
 
 
                 legendArrow.textContent =
-
                     "▼";
 
             }
 
         }
-
     );
 
 }
@@ -4676,16 +3340,26 @@ if (
 // =========================================================
 
 map.on(
-
     "moveend",
-
     () => {
 
+        if (
+            showLabelsCheckbox
+            &&
+            showLabelsCheckbox.checked
+        ) {
 
-        updateMapLabels();
+            updateMapLabels();
+
+        }
+
+        else {
+
+            clearLabels();
+
+        }
 
     }
-
 );
 
 
@@ -4707,30 +3381,21 @@ const clickableLayers = [
 
 
 clickableLayers.forEach(
-
     layer => {
 
 
         map.on(
-
             "click",
-
             layer,
-
             event => {
 
-
                 const feature =
-
                     event.features[0];
 
 
                 if (
-
                     !feature
-
                 ) {
-
 
                     return;
 
@@ -4738,21 +3403,16 @@ clickableLayers.forEach(
 
 
                 const properties =
-
                     feature.properties;
 
 
                 let html =
-
                     "<div class='popup-content'>";
 
 
                 for (
-
                     const key in properties
-
                 ) {
-
 
                     html += `
 
@@ -4778,70 +3438,49 @@ clickableLayers.forEach(
 
 
                 html +=
-
                     "</div>";
 
 
                 new maplibregl.Popup()
 
                     .setLngLat(
-
                         event.lngLat
-
                     )
 
                     .setHTML(
-
                         html
-
                     )
 
                     .addTo(
-
                         map
-
                     );
 
             }
-
         );
 
 
         map.on(
-
             "mouseenter",
-
             layer,
-
             () => {
 
-
                 map.getCanvas().style.cursor =
-
                     "pointer";
 
             }
-
         );
 
 
         map.on(
-
             "mouseleave",
-
             layer,
-
             () => {
 
-
                 map.getCanvas().style.cursor =
-
                     "";
 
             }
-
         );
 
     }
-
 );
