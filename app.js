@@ -2,12 +2,11 @@
 // PMTILES PROTOCOL
 // =========================================================
 
-const protocol =
-  new pmtiles.Protocol();
+const protocol = new pmtiles.Protocol();
 
 maplibregl.addProtocol(
-  "pmtiles",
-  protocol.tile
+    "pmtiles",
+    protocol.tile
 );
 
 
@@ -16,95 +15,336 @@ maplibregl.addProtocol(
 // =========================================================
 
 const regiUrl =
-  "https://phgeodex-data.dimasakajoshua.workers.dev/2020regTaxonomy.pmtiles";
+    "https://phgeodex-data.dimasakajoshua.workers.dev/2020regTaxonomy.pmtiles";
 
 const prvUrl =
-  "https://phgeodex-data.dimasakajoshua.workers.dev/2020prvTaxonomy.pmtiles";
+    "https://phgeodex-data.dimasakajoshua.workers.dev/2020prvTaxonomy.pmtiles";
 
 const munUrl =
-  "https://phgeodex-data.dimasakajoshua.workers.dev/2020munTaxonomy.pmtiles";
+    "https://phgeodex-data.dimasakajoshua.workers.dev/2020munTaxonomy.pmtiles";
 
 const brgyUrl =
-  "https://phgeodex-data.dimasakajoshua.workers.dev/2020brgyTaxonomy.pmtiles";
+    "https://phgeodex-data.dimasakajoshua.workers.dev/2020brgyTaxonomy.pmtiles";
 
 
 // =========================================================
-// JENKS BREAKS
+// JENKS COLORS
 // =========================================================
 
-const jenksBreaks = {
+const jenksColors = [
+    "#440154",
+    "#3B528B",
+    "#21918C",
+    "#5EC962",
+    "#FDE725"
+];
 
-  C1: [
-    12,
-    28,
-    47,
-    71
-  ],
 
-  CHBMWS: [
-    10,
-    25,
-    45,
-    70
-  ],
+// =========================================================
+// CALCULATE JENKS NATURAL BREAKS
+// =========================================================
 
-  CWS: [
-    10,
-    25,
-    45,
-    70
-  ],
+function calculateJenks(
+    values,
+    numberOfClasses = 5
+) {
 
-  N: [
-    10,
-    25,
-    45,
-    70
-  ],
+    const cleanValues = values
+        .map(
+            value =>
+                Number(value)
+        )
+        .filter(
+            value =>
+                Number.isFinite(value) &&
+                value >= 0 &&
+                value <= 100
+        )
+        .sort(
+            (a, b) =>
+                a - b
+        );
 
-  S1: [
-    10,
-    25,
-    45,
-    70
-  ],
 
-  S3: [
-    10,
-    25,
-    45,
-    70
-  ],
+    // =====================================================
+    // NO VALID VALUES
+    // =====================================================
 
-  URA: [
-    10,
-    25,
-    45,
-    70
-  ],
+    if (
+        cleanValues.length === 0
+    ) {
 
-  URM: [
-    10,
-    25,
-    45,
-    70
-  ],
+        return [
+            20,
+            40,
+            60,
+            80
+        ];
 
-  W1W3: [
-    10,
-    25,
-    45,
-    70
-  ],
+    }
 
-  W2: [
-    10,
-    25,
-    45,
-    70
-  ]
 
-};
+    // =====================================================
+    // ONE UNIQUE VALUE
+    // =====================================================
+
+    const uniqueValues = [
+        ...new Set(cleanValues)
+    ];
+
+
+    if (
+        uniqueValues.length === 1
+    ) {
+
+        const value =
+            uniqueValues[0];
+
+        return [
+            value,
+            value,
+            value,
+            value
+        ];
+
+    }
+
+
+    // =====================================================
+    // FEWER THAN 5 UNIQUE VALUES
+    // =====================================================
+
+    if (
+        uniqueValues.length < numberOfClasses
+    ) {
+
+        const breaks = [];
+
+        for (
+            let i = 1;
+            i < numberOfClasses;
+            i++
+        ) {
+
+            const position =
+                Math.floor(
+                    (
+                        i *
+                        uniqueValues.length
+                    ) /
+                    numberOfClasses
+                );
+
+            breaks.push(
+                uniqueValues[
+                    Math.min(
+                        position,
+                        uniqueValues.length - 1
+                    )
+                ]
+            );
+
+        }
+
+        return breaks;
+
+    }
+
+
+    // =====================================================
+    // JENKS OPTIMIZATION
+    // =====================================================
+
+    const n =
+        cleanValues.length;
+
+
+    const lowerClassLimits =
+        Array.from(
+            {
+                length:
+                    n + 1
+            },
+            () =>
+                Array(
+                    numberOfClasses + 1
+                ).fill(0)
+        );
+
+
+    const varianceCombinations =
+        Array.from(
+            {
+                length:
+                    n + 1
+            },
+            () =>
+                Array(
+                    numberOfClasses + 1
+                ).fill(Infinity)
+        );
+
+
+    for (
+        let i = 1;
+        i <= numberOfClasses;
+        i++
+    ) {
+
+        lowerClassLimits[1][i] =
+            1;
+
+        varianceCombinations[1][i] =
+            0;
+
+    }
+
+
+    for (
+        let l = 2;
+        l <= n;
+        l++
+    ) {
+
+        let sum =
+            0;
+
+        let sumSquares =
+            0;
+
+        let w =
+            0;
+
+
+        for (
+            let m = 1;
+            m <= l;
+            m++
+        ) {
+
+            const lowerClassLimit =
+                l - m + 1;
+
+
+            const value =
+                cleanValues[
+                    lowerClassLimit - 1
+                ];
+
+
+            w++;
+
+            sum +=
+                value;
+
+            sumSquares +=
+                value *
+                value;
+
+
+            const variance =
+                sumSquares -
+                (
+                    sum *
+                    sum
+                ) /
+                w;
+
+
+            if (
+                lowerClassLimit !== 1
+            ) {
+
+                for (
+                    let j = 2;
+                    j <= numberOfClasses;
+                    j++
+                ) {
+
+                    if (
+                        varianceCombinations[l][j] >=
+                        variance +
+                        varianceCombinations[
+                            lowerClassLimit - 1
+                        ][j - 1]
+                    ) {
+
+                        lowerClassLimits[l][j] =
+                            lowerClassLimit;
+
+
+                        varianceCombinations[l][j] =
+                            variance +
+                            varianceCombinations[
+                                lowerClassLimit - 1
+                            ][j - 1];
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+        lowerClassLimits[l][1] =
+            1;
+
+
+        varianceCombinations[l][1] =
+            variance;
+
+    }
+
+
+    const breaks =
+        Array(
+            numberOfClasses - 1
+        );
+
+
+    let k =
+        n;
+
+
+    for (
+        let j = numberOfClasses;
+        j >= 2;
+        j--
+    ) {
+
+        const id =
+            lowerClassLimits[k][j] - 2;
+
+
+        breaks[j - 2] =
+            cleanValues[id];
+
+
+        k =
+            lowerClassLimits[k][j] - 1;
+
+    }
+
+
+    return breaks
+        .map(
+            value =>
+                Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        value
+                    )
+                )
+        )
+        .sort(
+            (a, b) =>
+                a - b
+        );
+
+}
 
 
 // =========================================================
@@ -112,42 +352,32 @@ const jenksBreaks = {
 // =========================================================
 
 function createJenksExpression(
-
-  indicator
-
+    indicator,
+    breaks
 ) {
 
-  const breaks =
-    jenksBreaks[indicator];
+    return [
+        "step",
 
+        [
+            "get",
+            indicator
+        ],
 
-  return [
+        jenksColors[0],
 
-    "step",
+        breaks[0],
+        jenksColors[1],
 
-    [
+        breaks[1],
+        jenksColors[2],
 
-      "get",
+        breaks[2],
+        jenksColors[3],
 
-      indicator
-
-    ],
-
-    "#440154",
-
-    breaks[0],
-    "#3B528B",
-
-    breaks[1],
-    "#21918C",
-
-    breaks[2],
-    "#5EC962",
-
-    breaks[3],
-    "#FDE725"
-
-  ];
+        breaks[3],
+        jenksColors[4]
+    ];
 
 }
 
@@ -157,378 +387,382 @@ function createJenksExpression(
 // =========================================================
 
 const map =
-  new maplibregl.Map({
+    new maplibregl.Map({
 
-    container:
-      "map",
+        container:
+            "map",
 
-    style: {
+        style: {
 
-      version:
-        8,
+            version:
+                8,
 
-      sources: {
+            sources: {
 
-        regions: {
+                // =================================================
+                // LIGHT GRAY BASEMAP
+                // =================================================
 
-          type:
-            "vector",
+                basemap: {
 
-          url:
-            `pmtiles://${regiUrl}`
+                    type:
+                        "raster",
+
+                    tiles: [
+
+                        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+
+                    ],
+
+                    tileSize:
+                        256,
+
+                    attribution:
+                        "© OpenStreetMap contributors © CARTO"
+
+                },
+
+
+                // =================================================
+                // REGIONS
+                // =================================================
+
+                regions: {
+
+                    type:
+                        "vector",
+
+                    url:
+                        `pmtiles://${regiUrl}`
+
+                },
+
+
+                // =================================================
+                // PROVINCES
+                // =================================================
+
+                provinces: {
+
+                    type:
+                        "vector",
+
+                    url:
+                        `pmtiles://${prvUrl}`
+
+                },
+
+
+                // =================================================
+                // MUNICIPALITIES
+                // =================================================
+
+                municipalities: {
+
+                    type:
+                        "vector",
+
+                    url:
+                        `pmtiles://${munUrl}`
+
+                },
+
+
+                // =================================================
+                // BARANGAYS
+                // =================================================
+
+                barangays: {
+
+                    type:
+                        "vector",
+
+                    url:
+                        `pmtiles://${brgyUrl}`
+
+                }
+
+            },
+
+
+            layers: [
+
+                // =================================================
+                // BASEMAP
+                // =================================================
+
+                {
+
+                    id:
+                        "basemap",
+
+                    type:
+                        "raster",
+
+                    source:
+                        "basemap"
+
+                },
+
+
+                // =================================================
+                // REGIONS
+                // =================================================
+
+                {
+
+                    id:
+                        "regions-fill",
+
+                    type:
+                        "fill",
+
+                    source:
+                        "regions",
+
+                    "source-layer":
+                        "regions",
+
+                    paint: {
+
+                        "fill-color":
+                            "#FFFFFF",
+
+                        "fill-opacity":
+                            0
+
+                    }
+
+                },
+
+
+                {
+
+                    id:
+                        "regions-outline",
+
+                    type:
+                        "line",
+
+                    source:
+                        "regions",
+
+                    "source-layer":
+                        "regions",
+
+                    paint: {
+
+                        "line-color":
+                            "#333333",
+
+                        "line-width":
+                            1,
+
+                        "line-opacity":
+                            0
+
+                    }
+
+                },
+
+
+                // =================================================
+                // PROVINCES
+                // =================================================
+
+                {
+
+                    id:
+                        "provinces-fill",
+
+                    type:
+                        "fill",
+
+                    source:
+                        "provinces",
+
+                    "source-layer":
+                        "provinces",
+
+                    paint: {
+
+                        "fill-color":
+                            "#FFFFFF",
+
+                        "fill-opacity":
+                            0
+
+                    }
+
+                },
+
+
+                {
+
+                    id:
+                        "provinces-outline",
+
+                    type:
+                        "line",
+
+                    source:
+                        "provinces",
+
+                    "source-layer":
+                        "provinces",
+
+                    paint: {
+
+                        "line-color":
+                            "#333333",
+
+                        "line-width":
+                            1,
+
+                        "line-opacity":
+                            0
+
+                    }
+
+                },
+
+
+                // =================================================
+                // MUNICIPALITIES
+                // =================================================
+
+                {
+
+                    id:
+                        "municipalities-fill",
+
+                    type:
+                        "fill",
+
+                    source:
+                        "municipalities",
+
+                    "source-layer":
+                        "municipalities",
+
+                    paint: {
+
+                        "fill-color":
+                            "#FFFFFF",
+
+                        "fill-opacity":
+                            0
+
+                    }
+
+                },
+
+
+                {
+
+                    id:
+                        "municipalities-outline",
+
+                    type:
+                        "line",
+
+                    source:
+                        "municipalities",
+
+                    "source-layer":
+                        "municipalities",
+
+                    paint: {
+
+                        "line-color":
+                            "#333333",
+
+                        "line-width":
+                            1,
+
+                        "line-opacity":
+                            0
+
+                    }
+
+                },
+
+
+                // =================================================
+                // BARANGAYS
+                // =================================================
+
+                {
+
+                    id:
+                        "barangays-fill",
+
+                    type:
+                        "fill",
+
+                    source:
+                        "barangays",
+
+                    "source-layer":
+                        "barangays",
+
+                    paint: {
+
+                        "fill-color":
+                            "#FFFFFF",
+
+                        "fill-opacity":
+                            0
+
+                    }
+
+                },
+
+
+                {
+
+                    id:
+                        "barangays-outline",
+
+                    type:
+                        "line",
+
+                    source:
+                        "barangays",
+
+                    "source-layer":
+                            "barangays",
+
+                    paint: {
+
+                        "line-color":
+                            "#333333",
+
+                        "line-width":
+                            0.5,
+
+                        "line-opacity":
+                            0
+
+                    }
+
+                }
+
+            ]
 
         },
 
-        provinces: {
 
-          type:
-            "vector",
+        center: [
+            121,
+            12
+        ],
 
-          url:
-            `pmtiles://${prvUrl}`
 
-        },
+        zoom:
+            5
 
-        municipalities: {
-
-          type:
-            "vector",
-
-          url:
-            `pmtiles://${munUrl}`
-
-        },
-
-        barangays: {
-
-          type:
-            "vector",
-
-          url:
-            `pmtiles://${brgyUrl}`
-
-        }
-
-      },
-
-      layers: [
-
-        // =================================================
-        // REGIONS
-        // =================================================
-
-        {
-
-          id:
-            "regions-fill",
-
-          type:
-            "fill",
-
-          source:
-            "regions",
-
-          "source-layer":
-            "regions",
-
-          paint: {
-
-            "fill-color":
-              createJenksExpression(
-
-                "C1"
-
-              ),
-
-            "fill-opacity":
-              0.7
-
-          }
-
-        },
-
-
-        {
-
-          id:
-            "regions-outline",
-
-          type:
-            "line",
-
-          source:
-            "regions",
-
-          "source-layer":
-            "regions",
-
-          paint: {
-
-            "line-color":
-              "#333333",
-
-            "line-opacity":
-              0.8,
-
-            "line-width":
-              1
-
-          }
-
-        },
-
-
-        // =================================================
-        // PROVINCES
-        // =================================================
-
-        {
-
-          id:
-            "provinces-fill",
-
-          type:
-            "fill",
-
-          source:
-            "provinces",
-
-          "source-layer":
-            "provinces",
-
-          layout: {
-
-            visibility:
-              "none"
-
-          },
-
-          paint: {
-
-            "fill-color":
-              createJenksExpression(
-
-                "C1"
-
-              ),
-
-            "fill-opacity":
-              0.7
-
-          }
-
-        },
-
-
-        {
-
-          id:
-            "provinces-outline",
-
-          type:
-            "line",
-
-          source:
-            "provinces",
-
-          "source-layer":
-            "provinces",
-
-          layout: {
-
-            visibility:
-              "none"
-
-          },
-
-          paint: {
-
-            "line-color":
-              "#333333",
-
-            "line-opacity":
-              0.8,
-
-            "line-width":
-              1
-
-          }
-
-        },
-
-
-        // =================================================
-        // MUNICIPALITIES
-        // =================================================
-
-        {
-
-          id:
-            "municipalities-fill",
-
-          type:
-            "fill",
-
-          source:
-            "municipalities",
-
-          "source-layer":
-            "municipalities",
-
-          layout: {
-
-            visibility:
-              "none"
-
-          },
-
-          paint: {
-
-            "fill-color":
-              createJenksExpression(
-
-                "C1"
-
-              ),
-
-            "fill-opacity":
-              0.7
-
-          }
-
-        },
-
-
-        {
-
-          id:
-            "municipalities-outline",
-
-          type:
-            "line",
-
-          source:
-            "municipalities",
-
-          "source-layer":
-            "municipalities",
-
-          layout: {
-
-            visibility:
-              "none"
-
-          },
-
-          paint: {
-
-            "line-color":
-              "#333333",
-
-            "line-opacity":
-              0.8,
-
-            "line-width":
-              1
-
-          }
-
-        },
-
-
-        // =================================================
-        // BARANGAYS
-        // =================================================
-
-        {
-
-          id:
-            "barangays-fill",
-
-          type:
-            "fill",
-
-          source:
-            "barangays",
-
-          "source-layer":
-            "barangays",
-
-          layout: {
-
-            visibility:
-              "none"
-
-          },
-
-          paint: {
-
-            "fill-color":
-              createJenksExpression(
-
-                "C1"
-
-              ),
-
-            "fill-opacity":
-              0.7
-
-          }
-
-        },
-
-
-        {
-
-          id:
-            "barangays-outline",
-
-          type:
-            "line",
-
-          source:
-            "barangays",
-
-          "source-layer":
-            "barangays",
-
-          layout: {
-
-            visibility:
-              "none"
-
-          },
-
-          paint: {
-
-            "line-color":
-              "#333333",
-
-            "line-opacity":
-              0.8,
-
-            "line-width":
-              0.5
-
-          }
-
-        }
-
-      ]
-
-    },
-
-    center: [
-
-      121,
-      12
-
-    ],
-
-    zoom:
-      5
-
-  });
+    });
 
 
 // =========================================================
@@ -536,9 +770,7 @@ const map =
 // =========================================================
 
 map.addControl(
-
-  new maplibregl.NavigationControl()
-
+    new maplibregl.NavigationControl()
 );
 
 
@@ -547,322 +779,88 @@ map.addControl(
 // =========================================================
 
 const regionSelect =
-  document.getElementById(
-
-    "region-select"
-
-  );
+    document.getElementById(
+        "region-select"
+    );
 
 
 const provinceSelect =
-  document.getElementById(
-
-    "province-select"
-
-  );
+    document.getElementById(
+        "province-select"
+    );
 
 
 const municipalitySelect =
-  document.getElementById(
-
-    "municipality-select"
-
-  );
+    document.getElementById(
+        "municipality-select"
+    );
 
 
 const barangaySelect =
-  document.getElementById(
-
-    "barangay-select"
-
-  );
+    document.getElementById(
+        "barangay-select"
+    );
 
 
 const indicatorSelect =
-  document.getElementById(
-
-    "indicator-select"
-
-  );
+    document.getElementById(
+        "indicator-select"
+    );
 
 
 // =========================================================
-// LEGEND SELECTORS
-// =========================================================
-
-const legendToggle =
-  document.getElementById(
-
-    "legend-toggle"
-
-  );
-
-
-const legendContent =
-  document.getElementById(
-
-    "legend-content"
-
-  );
-
-
-const legendArrow =
-  document.getElementById(
-
-    "legend-arrow"
-
-  );
-
-
-const legendIndicatorTitle =
-  document.getElementById(
-
-    "legend-indicator-title"
-
-  );
-
-
-const legendLabel0 =
-  document.getElementById(
-
-    "legend-label-0"
-
-  );
-
-
-const legendLabel1 =
-  document.getElementById(
-
-    "legend-label-1"
-
-  );
-
-
-const legendLabel2 =
-  document.getElementById(
-
-    "legend-label-2"
-
-  );
-
-
-const legendLabel3 =
-  document.getElementById(
-
-    "legend-label-3"
-
-  );
-
-
-const legendLabel4 =
-  document.getElementById(
-
-    "legend-label-4"
-
-  );
-
-
-// =========================================================
-// LEGEND TOGGLE
-// =========================================================
-
-legendToggle.addEventListener(
-
-  "click",
-
-  () => {
-
-
-    const isVisible =
-
-      legendContent.style.display !==
-      "none";
-
-
-    if (
-
-      isVisible
-
-    ) {
-
-
-      legendContent.style.display =
-        "none";
-
-
-      legendArrow.textContent =
-        "▼";
-
-    }
-
-
-    else {
-
-
-      legendContent.style.display =
-        "block";
-
-
-      legendArrow.textContent =
-        "▲";
-
-    }
-
-  }
-
-);
-
-
-// =========================================================
-// UPDATE LEGEND
-// =========================================================
-
-function updateLegend(
-
-  indicator
-
-) {
-
-
-  const breaks =
-    jenksBreaks[indicator];
-
-
-  if (
-
-    !breaks
-
-  ) {
-
-    return;
-
-  }
-
-
-  legendIndicatorTitle.textContent =
-    indicator;
-
-
-  legendLabel0.textContent =
-    `0–${breaks[0]}%`;
-
-
-  legendLabel1.textContent =
-    `${breaks[0]}–${breaks[1]}%`;
-
-
-  legendLabel2.textContent =
-    `${breaks[1]}–${breaks[2]}%`;
-
-
-  legendLabel3.textContent =
-    `${breaks[2]}–${breaks[3]}%`;
-
-
-  legendLabel4.textContent =
-    `>${breaks[3]}%`;
-
-}
-
-
-// =========================================================
-// ADMINISTRATIVE HIERARCHY
+// ADMIN HIERARCHY
 // =========================================================
 
 let adminHierarchy;
 
 
 fetch(
-
-  "adminHierarchy.json"
-
+    "adminHierarchy.json"
 )
 
-  .then(
+    .then(
+        response => {
 
-    response => {
+            if (
+                !response.ok
+            ) {
 
+                throw new Error(
+                    "Could not load adminHierarchy.json"
+                );
 
-      if (
+            }
 
-        !response.ok
+            return response.json();
 
-      ) {
+        }
+    )
 
-        throw new Error(
+    .then(
+        data => {
 
-          "Could not load adminHierarchy.json"
-
-        );
-
-      }
-
-
-      return response.json();
-
-    }
-
-  )
-
-  .then(
-
-    data => {
+            adminHierarchy =
+                data;
 
 
-      adminHierarchy =
-        data;
+            populateRegions();
 
 
-      populateRegions();
+            updateMap();
 
+        }
+    )
 
-      populateProvinces(
+    .catch(
+        error => {
 
-        ""
+            console.error(
+                error
+            );
 
-      );
-
-
-      populateMunicipalities(
-
-        "",
-
-        ""
-
-      );
-
-
-      populateBarangays(
-
-        "",
-
-        "",
-
-        ""
-
-      );
-
-
-      showInitialMap();
-
-    }
-
-  )
-
-  .catch(
-
-    error => {
-
-
-      console.error(
-
-        error
-
-      );
-
-    }
-
-  );
+        }
+    );
 
 
 // =========================================================
@@ -870,41 +868,30 @@ fetch(
 // =========================================================
 
 function addOption(
-
-  select,
-
-  value,
-
-  text
-
+    select,
+    value,
+    text
 ) {
 
+    const option =
+        document.createElement(
+            "option"
+        );
 
-  const option =
-    document.createElement(
 
-      "option"
+    option.value =
+        String(
+            value
+        );
 
+
+    option.textContent =
+        text;
+
+
+    select.appendChild(
+        option
     );
-
-
-  option.value =
-    String(
-
-      value
-
-    );
-
-
-  option.textContent =
-    text;
-
-
-  select.appendChild(
-
-    option
-
-  );
 
 }
 
@@ -915,40 +902,28 @@ function addOption(
 
 function populateRegions() {
 
-
-  regionSelect.innerHTML =
-    "";
-
-
-  addOption(
-
-    regionSelect,
-
-    "",
-
-    "ALL"
-
-  );
+    regionSelect.innerHTML =
+        "";
 
 
-  adminHierarchy.regions.forEach(
-
-    region => {
-
-
-      addOption(
-
+    addOption(
         regionSelect,
+        "",
+        "ALL"
+    );
 
-        region.adm1_psgc,
 
-        region.adm1_en
+    adminHierarchy.regions.forEach(
+        region => {
 
-      );
+            addOption(
+                regionSelect,
+                region.adm1_psgc,
+                region.adm1_en
+            );
 
-    }
-
-  );
+        }
+    );
 
 }
 
@@ -958,111 +933,77 @@ function populateRegions() {
 // =========================================================
 
 function populateProvinces(
-
-  regionCode
-
+    regionCode
 ) {
 
-
-  provinceSelect.innerHTML =
-    "";
-
-
-  addOption(
-
-    provinceSelect,
-
-    "",
-
-    "ALL"
-
-  );
+    provinceSelect.innerHTML =
+        "";
 
 
-  municipalitySelect.innerHTML =
-    "";
-
-
-  addOption(
-
-    municipalitySelect,
-
-    "",
-
-    "ALL"
-
-  );
-
-
-  barangaySelect.innerHTML =
-    "";
-
-
-  addOption(
-
-    barangaySelect,
-
-    "",
-
-    "ALL"
-
-  );
-
-
-  let provinces =
-    adminHierarchy.provinces;
-
-
-  if (
-
-    regionCode !== ""
-
-  ) {
-
-
-    provinces =
-      provinces.filter(
-
-        province =>
-
-
-          String(
-
-            province.adm1_psgc
-
-          )
-
-          ===
-
-          String(
-
-            regionCode
-
-          )
-
-      );
-
-  }
-
-
-  provinces.forEach(
-
-    province => {
-
-
-      addOption(
-
+    addOption(
         provinceSelect,
+        "",
+        "ALL"
+    );
 
-        province.adm2_psgc,
 
-        province.adm2_en
+    municipalitySelect.innerHTML =
+        "";
 
-      );
+
+    addOption(
+        municipalitySelect,
+        "",
+        "ALL"
+    );
+
+
+    barangaySelect.innerHTML =
+        "";
+
+
+    addOption(
+        barangaySelect,
+        "",
+        "ALL"
+    );
+
+
+    let provinces =
+        adminHierarchy.provinces;
+
+
+    if (
+        regionCode !== ""
+    ) {
+
+        provinces =
+            provinces.filter(
+                province =>
+
+                    String(
+                        province.adm1_psgc
+                    )
+                    ===
+                    String(
+                        regionCode
+                    )
+            );
 
     }
 
-  );
+
+    provinces.forEach(
+        province => {
+
+            addOption(
+                provinceSelect,
+                province.adm2_psgc,
+                province.adm2_en
+            );
+
+        }
+    );
 
 }
 
@@ -1072,130 +1013,87 @@ function populateProvinces(
 // =========================================================
 
 function populateMunicipalities(
-
-  regionCode,
-
-  provinceCode
-
+    regionCode,
+    provinceCode
 ) {
 
-
-  municipalitySelect.innerHTML =
-    "";
-
-
-  addOption(
-
-    municipalitySelect,
-
-    "",
-
-    "ALL"
-
-  );
+    municipalitySelect.innerHTML =
+        "";
 
 
-  barangaySelect.innerHTML =
-    "";
-
-
-  addOption(
-
-    barangaySelect,
-
-    "",
-
-    "ALL"
-
-  );
-
-
-  let municipalities =
-    adminHierarchy.municipalities;
-
-
-  if (
-
-    regionCode !== ""
-
-  ) {
-
-
-    municipalities =
-      municipalities.filter(
-
-        municipality =>
-
-
-          String(
-
-            municipality.adm1_psgc
-
-          )
-
-          ===
-
-          String(
-
-            regionCode
-
-          )
-
-      );
-
-  }
-
-
-  if (
-
-    provinceCode !== ""
-
-  ) {
-
-
-    municipalities =
-      municipalities.filter(
-
-        municipality =>
-
-
-          String(
-
-            municipality.adm2_psgc
-
-          )
-
-          ===
-
-          String(
-
-            provinceCode
-
-          )
-
-      );
-
-  }
-
-
-  municipalities.forEach(
-
-    municipality => {
-
-
-      addOption(
-
+    addOption(
         municipalitySelect,
+        "",
+        "ALL"
+    );
 
-        municipality.adm3_psgc,
 
-        municipality.adm3_en
+    barangaySelect.innerHTML =
+        "";
 
-      );
+
+    addOption(
+        barangaySelect,
+        "",
+        "ALL"
+    );
+
+
+    let municipalities =
+        adminHierarchy.municipalities;
+
+
+    if (
+        regionCode !== ""
+    ) {
+
+        municipalities =
+            municipalities.filter(
+                municipality =>
+
+                    String(
+                        municipality.adm1_psgc
+                    )
+                    ===
+                    String(
+                        regionCode
+                    )
+            );
 
     }
 
-  );
+
+    if (
+        provinceCode !== ""
+    ) {
+
+        municipalities =
+            municipalities.filter(
+                municipality =>
+
+                    String(
+                        municipality.adm2_psgc
+                    )
+                    ===
+                    String(
+                        provinceCode
+                    )
+            );
+
+    }
+
+
+    municipalities.forEach(
+        municipality => {
+
+            addOption(
+                municipalitySelect,
+                municipality.adm3_psgc,
+                municipality.adm3_en
+            );
+
+        }
+    );
 
 }
 
@@ -1205,360 +1103,1015 @@ function populateMunicipalities(
 // =========================================================
 
 function populateBarangays(
-
-  regionCode,
-
-  provinceCode,
-
-  municipalityCode
-
+    regionCode,
+    provinceCode,
+    municipalityCode
 ) {
 
+    barangaySelect.innerHTML =
+        "";
 
-  barangaySelect.innerHTML =
-    "";
 
-
-  addOption(
-
-    barangaySelect,
-
-    "",
-
-    "ALL"
-
-  );
-
-
-  let barangays =
-    adminHierarchy.barangays;
-
-
-  if (
-
-    regionCode !== ""
-
-  ) {
-
-
-    barangays =
-      barangays.filter(
-
-        barangay =>
-
-
-          String(
-
-            barangay.adm1_psgc
-
-          )
-
-          ===
-
-          String(
-
-            regionCode
-
-          )
-
-      );
-
-  }
-
-
-  if (
-
-    provinceCode !== ""
-
-  ) {
-
-
-    barangays =
-      barangays.filter(
-
-        barangay =>
-
-
-          String(
-
-            barangay.adm2_psgc
-
-          )
-
-          ===
-
-          String(
-
-            provinceCode
-
-          )
-
-      );
-
-  }
-
-
-  if (
-
-    municipalityCode !== ""
-
-  ) {
-
-
-    barangays =
-      barangays.filter(
-
-        barangay =>
-
-
-          String(
-
-            barangay.adm3_psgc
-
-          )
-
-          ===
-
-          String(
-
-            municipalityCode
-
-          )
-
-      );
-
-  }
-
-
-  barangays.forEach(
-
-    barangay => {
-
-
-      addOption(
-
+    addOption(
         barangaySelect,
+        "",
+        "ALL"
+    );
 
-        barangay.adm4_psgc,
 
-        barangay.adm4_en
+    let barangays =
+        adminHierarchy.barangays;
 
-      );
+
+    if (
+        regionCode !== ""
+    ) {
+
+        barangays =
+            barangays.filter(
+                barangay =>
+
+                    String(
+                        barangay.adm1_psgc
+                    )
+                    ===
+                    String(
+                        regionCode
+                    )
+            );
 
     }
 
-  );
+
+    if (
+        provinceCode !== ""
+    ) {
+
+        barangays =
+            barangays.filter(
+                barangay =>
+
+                    String(
+                        barangay.adm2_psgc
+                    )
+                    ===
+                    String(
+                        provinceCode
+                    )
+            );
+
+    }
+
+
+    if (
+        municipalityCode !== ""
+    ) {
+
+        barangays =
+            barangays.filter(
+                barangay =>
+
+                    String(
+                        barangay.adm3_psgc
+                    )
+                    ===
+                    String(
+                        municipalityCode
+                    )
+            );
+
+    }
+
+
+    barangays.forEach(
+        barangay => {
+
+            addOption(
+                barangaySelect,
+                barangay.adm4_psgc,
+                barangay.adm4_en
+            );
+
+        }
+    );
 
 }
 
 
 // =========================================================
-// SET LAYER VISIBILITY
+// GET EXACTLY THE RECORDS CURRENTLY BEING SHOWN
 // =========================================================
 
-function setLayerVisibility(
+function getCurrentRecords() {
 
-  level,
-
-  visibility
-
-) {
-
-
-  map.setLayoutProperty(
-
-    `${level}-fill`,
-
-    "visibility",
-
-    visibility
-
-  );
+    const regionCode =
+        String(
+            regionSelect.value
+        );
 
 
-  map.setLayoutProperty(
+    const provinceCode =
+        String(
+            provinceSelect.value
+        );
 
-    `${level}-outline`,
 
-    "visibility",
+    const municipalityCode =
+        String(
+            municipalitySelect.value
+        );
 
-    visibility
 
-  );
+    const barangayCode =
+        String(
+            barangaySelect.value
+        );
+
+
+    // =====================================================
+    // BARANGAY SELECTED
+    // =====================================================
+
+    if (
+        barangayCode !== ""
+    ) {
+
+        return {
+
+            level:
+                "barangays",
+
+            records:
+                adminHierarchy.barangays.filter(
+                    barangay =>
+
+                        String(
+                            barangay.adm4_psgc
+                        )
+                        ===
+                        barangayCode
+                )
+
+        };
+
+    }
+
+
+    // =====================================================
+    // MUNICIPALITY SELECTED
+    // SHOW BARANGAYS
+    // =====================================================
+
+    if (
+        municipalityCode !== ""
+    ) {
+
+        return {
+
+            level:
+                "barangays",
+
+            records:
+                adminHierarchy.barangays.filter(
+                    barangay =>
+
+                        String(
+                            barangay.adm3_psgc
+                        )
+                        ===
+                        municipalityCode
+                )
+
+        };
+
+    }
+
+
+    // =====================================================
+    // PROVINCE SELECTED
+    // SHOW MUNICIPALITIES
+    // =====================================================
+
+    if (
+        provinceCode !== ""
+    ) {
+
+        return {
+
+            level:
+                "municipalities",
+
+            records:
+                adminHierarchy.municipalities.filter(
+                    municipality =>
+
+                        String(
+                            municipality.adm2_psgc
+                        )
+                        ===
+                        provinceCode
+                )
+
+        };
+
+    }
+
+
+    // =====================================================
+    // REGION SELECTED
+    // SHOW PROVINCES
+    // =====================================================
+
+    if (
+        regionCode !== ""
+    ) {
+
+        return {
+
+            level:
+                "provinces",
+
+            records:
+                adminHierarchy.provinces.filter(
+                    province =>
+
+                        String(
+                            province.adm1_psgc
+                        )
+                        ===
+                        regionCode
+                )
+
+        };
+
+    }
+
+
+    // =====================================================
+    // ALL SELECTED
+    // SHOW REGIONS
+    // =====================================================
+
+    return {
+
+        level:
+            "regions",
+
+        records:
+            adminHierarchy.regions
+
+    };
 
 }
 
 
 // =========================================================
-// SET LAYER OPACITY
+// UPDATE DYNAMIC JENKS
 // =========================================================
 
-function setLayerOpacity(
+function updateDynamicJenks() {
 
-  level,
-
-  fillOpacity,
-
-  lineOpacity
-
-) {
+    const indicator =
+        indicatorSelect.value;
 
 
-  map.setPaintProperty(
-
-    `${level}-fill`,
-
-    "fill-opacity",
-
-    fillOpacity
-
-  );
-
-
-  map.setPaintProperty(
-
-    `${level}-outline`,
-
-    "line-opacity",
-
-    lineOpacity
-
-  );
-
-}
-
-
-// =========================================================
-// SET FILTER
-// =========================================================
-
-function setLevelFilter(
-
-  level,
-
-  filter
-
-) {
-
-
-  map.setFilter(
-
-    `${level}-fill`,
-
-    filter
-
-  );
-
-
-  map.setFilter(
-
-    `${level}-outline`,
-
-    filter
-
-  );
-
-}
-
-
-// =========================================================
-// CLEAR ALL FILTERS
-// =========================================================
-
-function clearAllFilters() {
-
-
-  const levels = [
-
-    "regions",
-
-    "provinces",
-
-    "municipalities",
-
-    "barangays"
-
-  ];
-
-
-  levels.forEach(
-
-    level => {
-
-
-      setLevelFilter(
-
+    const {
         level,
+        records
+    } =
+        getCurrentRecords();
 
-        null
 
-      );
+    // =====================================================
+    // ONLY CURRENTLY SHOWN RECORDS
+    // ARE USED FOR JENKS
+    // =====================================================
 
-    }
+    const values =
+        records
+            .map(
+                record =>
 
-  );
+                    Number(
+                        record[indicator]
+                    )
+            )
+            .filter(
+                value =>
+
+                    Number.isFinite(
+                        value
+                    )
+
+                    &&
+
+                    value >= 0
+
+                    &&
+
+                    value <= 100
+            );
+
+
+    console.log(
+        "CURRENT MAP LEVEL:",
+        level
+    );
+
+
+    console.log(
+        "CURRENT RECORD COUNT:",
+        records.length
+    );
+
+
+    console.log(
+        "VALUES USED FOR JENKS:",
+        values
+    );
+
+
+    const breaks =
+        calculateJenks(
+            values,
+            5
+        );
+
+
+    console.log(
+        "DYNAMIC JENKS BREAKS:",
+        breaks
+    );
+
+
+    const expression =
+        createJenksExpression(
+            indicator,
+            breaks
+        );
+
+
+    const activeFillLayer =
+        `${level}-fill`;
+
+
+    map.setPaintProperty(
+        activeFillLayer,
+        "fill-color",
+        expression
+    );
+
+
+    map.setPaintProperty(
+        activeFillLayer,
+        "fill-opacity",
+        1.0
+    );
+
+
+    updateLegend(
+        indicator,
+        breaks
+    );
 
 }
 
 
 // =========================================================
-// INITIAL MAP
+// UPDATE MAP FILTERS
 // =========================================================
 
-function showInitialMap() {
+function updateMapFilters() {
+
+    const regionCode =
+        String(
+            regionSelect.value
+        );
 
 
-  clearAllFilters();
+    const provinceCode =
+        String(
+            provinceSelect.value
+        );
 
 
-  setLayerVisibility(
-
-    "regions",
-
-    "visible"
-
-  );
+    const municipalityCode =
+        String(
+            municipalitySelect.value
+        );
 
 
-  setLayerVisibility(
-
-    "provinces",
-
-    "none"
-
-  );
+    const barangayCode =
+        String(
+            barangaySelect.value
+        );
 
 
-  setLayerVisibility(
+    // =====================================================
+    // REGIONS
+    // =====================================================
 
-    "municipalities",
-
-    "none"
-
-  );
-
-
-  setLayerVisibility(
-
-    "barangays",
-
-    "none"
-
-  );
+    map.setFilter(
+        "regions-fill",
+        null
+    );
 
 
-  setLayerOpacity(
-
-    "regions",
-
-    0.7,
-
-    0.8
-
-  );
+    map.setFilter(
+        "regions-outline",
+        null
+    );
 
 
-  fitToAllRegions();
+    // =====================================================
+    // PROVINCES
+    // =====================================================
+
+    if (
+        regionCode === ""
+    ) {
+
+        map.setFilter(
+            "provinces-fill",
+            [
+                "==",
+                [
+                    "get",
+                    "adm1_psgc"
+                ],
+                -999999999
+            ]
+        );
+
+
+        map.setFilter(
+            "provinces-outline",
+            [
+                "==",
+                [
+                    "get",
+                    "adm1_psgc"
+                ],
+                -999999999
+            ]
+        );
+
+    }
+
+    else {
+
+        map.setFilter(
+            "provinces-fill",
+            [
+                "==",
+                [
+                    "get",
+                    "adm1_psgc"
+                ],
+                Number(
+                    regionCode
+                )
+            ]
+        );
+
+
+        map.setFilter(
+            "provinces-outline",
+            [
+                "==",
+                [
+                    "get",
+                    "adm1_psgc"
+                ],
+                Number(
+                    regionCode
+                )
+            ]
+        );
+
+    }
+
+
+    // =====================================================
+    // MUNICIPALITIES
+    // =====================================================
+
+    if (
+        provinceCode === ""
+    ) {
+
+        map.setFilter(
+            "municipalities-fill",
+            [
+                "==",
+                [
+                    "get",
+                    "adm2_psgc"
+                ],
+                -999999999
+            ]
+        );
+
+
+        map.setFilter(
+            "municipalities-outline",
+            [
+                "==",
+                [
+                    "get",
+                    "adm2_psgc"
+                ],
+                -999999999
+            ]
+        );
+
+    }
+
+    else {
+
+        map.setFilter(
+            "municipalities-fill",
+            [
+                "==",
+                [
+                    "get",
+                    "adm2_psgc"
+                ],
+                Number(
+                    provinceCode
+                )
+            ]
+        );
+
+
+        map.setFilter(
+            "municipalities-outline",
+            [
+                "==",
+                [
+                    "get",
+                    "adm2_psgc"
+                ],
+                Number(
+                    provinceCode
+                )
+            ]
+        );
+
+    }
+
+
+    // =====================================================
+    // BARANGAYS
+    // =====================================================
+
+    if (
+        municipalityCode === ""
+    ) {
+
+        map.setFilter(
+            "barangays-fill",
+            [
+                "==",
+                [
+                    "get",
+                    "adm3_psgc"
+                ],
+                -999999999
+            ]
+        );
+
+
+        map.setFilter(
+            "barangays-outline",
+            [
+                "==",
+                [
+                    "get",
+                    "adm3_psgc"
+                ],
+                -999999999
+            ]
+        );
+
+    }
+
+    else if (
+        barangayCode !== ""
+    ) {
+
+        map.setFilter(
+            "barangays-fill",
+            [
+                "==",
+                [
+                    "get",
+                    "adm4_psgc"
+                ],
+                Number(
+                    barangayCode
+                )
+            ]
+        );
+
+
+        map.setFilter(
+            "barangays-outline",
+            [
+                "==",
+                [
+                    "get",
+                    "adm4_psgc"
+                ],
+                Number(
+                    barangayCode
+                )
+            ]
+        );
+
+    }
+
+    else {
+
+        map.setFilter(
+            "barangays-fill",
+            [
+                "==",
+                [
+                    "get",
+                    "adm3_psgc"
+                ],
+                Number(
+                    municipalityCode
+                )
+            ]
+        );
+
+
+        map.setFilter(
+            "barangays-outline",
+            [
+                "==",
+                [
+                    "get",
+                    "adm3_psgc"
+                ],
+                Number(
+                    municipalityCode
+                )
+            ]
+        );
+
+    }
+
+}
+
+
+// =========================================================
+// UPDATE MAP
+// =========================================================
+
+function updateMap() {
+
+    const {
+        level
+    } =
+        getCurrentRecords();
+
+
+    const levels = [
+
+        "regions",
+
+        "provinces",
+
+        "municipalities",
+
+        "barangays"
+
+    ];
+
+
+    updateMapFilters();
+
+
+    levels.forEach(
+        currentLevel => {
+
+            const fillLayer =
+                `${currentLevel}-fill`;
+
+
+            const outlineLayer =
+                `${currentLevel}-outline`;
+
+
+            const isActive =
+                currentLevel === level;
+
+
+            map.setPaintProperty(
+                fillLayer,
+                "fill-opacity",
+                isActive
+                    ? 1.0
+                    : 0
+            );
+
+
+            map.setPaintProperty(
+                outlineLayer,
+                "line-opacity",
+                isActive
+                    ? 1.0
+                    : 0
+            );
+
+        }
+    );
+
+
+    updateDynamicJenks();
+
+}
+
+
+// =========================================================
+// ZOOM TO SELECTION
+// =========================================================
+
+function zoomToSelection() {
+
+    const {
+        level
+    } =
+        getCurrentRecords();
+
+
+    let layerId;
+
+    let targetCode;
+
+    let propertyName;
+
+
+    // =====================================================
+    // REGION SELECTED
+    // =====================================================
+
+    if (
+        level === "provinces"
+    ) {
+
+        layerId =
+            "regions-fill";
+
+
+        targetCode =
+            String(
+                regionSelect.value
+            );
+
+
+        propertyName =
+            "adm1_psgc";
+
+    }
+
+
+    // =====================================================
+    // PROVINCE SELECTED
+    // =====================================================
+
+    else if (
+        level === "municipalities"
+    ) {
+
+        layerId =
+            "provinces-fill";
+
+
+        targetCode =
+            String(
+                provinceSelect.value
+            );
+
+
+        propertyName =
+            "adm2_psgc";
+
+    }
+
+
+    // =====================================================
+    // MUNICIPALITY OR BARANGAY
+    // =====================================================
+
+    else if (
+        level === "barangays"
+    ) {
+
+        if (
+            barangaySelect.value !== ""
+        ) {
+
+            layerId =
+                "barangays-fill";
+
+
+            targetCode =
+                String(
+                    barangaySelect.value
+                );
+
+
+            propertyName =
+                "adm4_psgc";
+
+        }
+
+        else {
+
+            layerId =
+                "municipalities-fill";
+
+
+            targetCode =
+                String(
+                    municipalitySelect.value
+                );
+
+
+            propertyName =
+                "adm3_psgc";
+
+        }
+
+    }
+
+
+    // =====================================================
+    // ALL PHILIPPINES
+    // =====================================================
+
+    else {
+
+        map.fitBounds(
+
+            [
+                [
+                    116.5,
+                    4.5
+                ],
+
+                [
+                    127.0,
+                    21.5
+                ]
+            ],
+
+            {
+                padding:
+                    50,
+
+                duration:
+                    1200
+            }
+
+        );
+
+
+        return;
+
+    }
+
+
+    const features =
+        map.queryRenderedFeatures(
+            undefined,
+            {
+                layers: [
+                    layerId
+                ]
+            }
+        );
+
+
+    const matchingFeatures =
+        features.filter(
+            feature =>
+
+                String(
+                    feature.properties[
+                        propertyName
+                    ]
+                )
+                ===
+                targetCode
+        );
+
+
+    if (
+        matchingFeatures.length === 0
+    ) {
+
+        console.warn(
+            "No matching feature found for zoom."
+        );
+
+
+        return;
+
+    }
+
+
+    const bounds =
+        new maplibregl.LngLatBounds();
+
+
+    matchingFeatures.forEach(
+        feature => {
+
+            const geometry =
+                feature.geometry;
+
+
+            if (
+                geometry.type === "Polygon"
+            ) {
+
+                geometry.coordinates.forEach(
+                    ring => {
+
+                        ring.forEach(
+                            coordinate => {
+
+                                bounds.extend(
+                                    coordinate
+                                );
+
+                            }
+                        );
+
+                    }
+                );
+
+            }
+
+
+            else if (
+                geometry.type === "MultiPolygon"
+            ) {
+
+                geometry.coordinates.forEach(
+                    polygon => {
+
+                        polygon.forEach(
+                            ring => {
+
+                                ring.forEach(
+                                    coordinate => {
+
+                                        bounds.extend(
+                                            coordinate
+                                        );
+
+                                    }
+                                );
+
+                            }
+                        );
+
+                    }
+                );
+
+            }
+
+        }
+    );
+
+
+    if (
+        !bounds.isEmpty()
+    ) {
+
+        map.fitBounds(
+            bounds,
+            {
+
+                padding:
+                    60,
+
+                duration:
+                    1200,
+
+                maxZoom:
+                    12
+
+            }
+        );
+
+    }
 
 }
 
@@ -1568,218 +2121,20 @@ function showInitialMap() {
 // =========================================================
 
 regionSelect.addEventListener(
+    "change",
+    () => {
 
-  "change",
-
-  event => {
-
-
-    const regionCode =
-      String(
-
-        event.target.value
-
-      );
+        populateProvinces(
+            regionSelect.value
+        );
 
 
-    populateProvinces(
-
-      regionCode
-
-    );
+        updateMap();
 
 
-    clearAllFilters();
-
-
-    if (
-
-      regionCode === ""
-
-    ) {
-
-
-      setLayerVisibility(
-
-        "regions",
-
-        "visible"
-
-      );
-
-
-      setLayerVisibility(
-
-        "provinces",
-
-        "none"
-
-      );
-
-
-      setLayerVisibility(
-
-        "municipalities",
-
-        "none"
-
-      );
-
-
-      setLayerVisibility(
-
-        "barangays",
-
-        "none"
-
-      );
-
-
-      setLayerOpacity(
-
-        "regions",
-
-        0.7,
-
-        0.8
-
-      );
-
-
-      fitToAllRegions();
-
-
-      return;
+        zoomToSelection();
 
     }
-
-
-    setLayerVisibility(
-
-      "regions",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "provinces",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "municipalities",
-
-      "none"
-
-    );
-
-
-    setLayerVisibility(
-
-      "barangays",
-
-      "none"
-
-    );
-
-
-    setLayerOpacity(
-
-      "regions",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "provinces",
-
-      0.7,
-
-      0.8
-
-    );
-
-
-    setLevelFilter(
-
-      "provinces",
-
-      [
-
-        "==",
-
-        [
-
-          "to-string",
-
-          [
-
-            "get",
-
-            "adm1_psgc"
-
-          ]
-
-        ],
-
-        regionCode
-
-      ]
-
-    );
-
-
-    const selectedRegion =
-
-      adminHierarchy.regions.find(
-
-        region =>
-
-
-          String(
-
-            region.adm1_psgc
-
-          )
-
-          ===
-
-          regionCode
-
-      );
-
-
-    if (
-
-      selectedRegion &&
-
-      selectedRegion.bbox
-
-    ) {
-
-
-      fitToBBox(
-
-        selectedRegion.bbox
-
-      );
-
-    }
-
-  }
-
 );
 
 
@@ -1788,360 +2143,21 @@ regionSelect.addEventListener(
 // =========================================================
 
 provinceSelect.addEventListener(
+    "change",
+    () => {
 
-  "change",
-
-  event => {
-
-
-    const regionCode =
-      String(
-
-        regionSelect.value
-
-      );
-
-
-    const provinceCode =
-      String(
-
-        event.target.value
-
-      );
-
-
-    populateMunicipalities(
-
-      regionCode,
-
-      provinceCode
-
-    );
-
-
-    clearAllFilters();
-
-
-    if (
-
-      provinceCode === ""
-
-    ) {
-
-
-      if (
-
-        regionCode !== ""
-
-      ) {
-
-
-        setLayerVisibility(
-
-          "regions",
-
-          "visible"
-
+        populateMunicipalities(
+            regionSelect.value,
+            provinceSelect.value
         );
 
 
-        setLayerVisibility(
+        updateMap();
 
-          "provinces",
 
-          "visible"
-
-        );
-
-
-        setLayerVisibility(
-
-          "municipalities",
-
-          "none"
-
-        );
-
-
-        setLayerVisibility(
-
-          "barangays",
-
-          "none"
-
-        );
-
-
-        setLayerOpacity(
-
-          "regions",
-
-          0.35,
-
-          0.5
-
-        );
-
-
-        setLayerOpacity(
-
-          "provinces",
-
-          0.7,
-
-          0.8
-
-        );
-
-
-        setLevelFilter(
-
-          "provinces",
-
-          [
-
-            "==",
-
-            [
-
-              "to-string",
-
-              [
-
-                "get",
-
-                "adm1_psgc"
-
-              ]
-
-            ],
-
-            regionCode
-
-          ]
-
-        );
-
-
-        const selectedRegion =
-
-          adminHierarchy.regions.find(
-
-            region =>
-
-
-              String(
-
-                region.adm1_psgc
-
-              )
-
-              ===
-
-              regionCode
-
-          );
-
-
-        if (
-
-          selectedRegion &&
-
-          selectedRegion.bbox
-
-        ) {
-
-
-          fitToBBox(
-
-            selectedRegion.bbox
-
-          );
-
-        }
-
-      }
-
-
-      else {
-
-
-        showInitialMap();
-
-      }
-
-
-      return;
+        zoomToSelection();
 
     }
-
-
-    setLayerVisibility(
-
-      "regions",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "provinces",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "municipalities",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "barangays",
-
-      "none"
-
-    );
-
-
-    setLayerOpacity(
-
-      "regions",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "provinces",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "municipalities",
-
-      0.7,
-
-      0.8
-
-    );
-
-
-    setLevelFilter(
-
-      "provinces",
-
-      [
-
-        "==",
-
-        [
-
-          "to-string",
-
-          [
-
-            "get",
-
-            "adm2_psgc"
-
-          ]
-
-        ],
-
-        provinceCode
-
-      ]
-
-    );
-
-
-    setLevelFilter(
-
-      "municipalities",
-
-      [
-
-        "==",
-
-        [
-
-          "to-string",
-
-          [
-
-            "get",
-
-            "adm2_psgc"
-
-          ]
-
-        ],
-
-        provinceCode
-
-      ]
-
-    );
-
-
-    const selectedProvince =
-
-      adminHierarchy.provinces.find(
-
-        province =>
-
-
-          String(
-
-            province.adm2_psgc
-
-          )
-
-          ===
-
-          provinceCode
-
-      );
-
-
-    if (
-
-      selectedProvince &&
-
-      selectedProvince.bbox
-
-    ) {
-
-
-      fitToBBox(
-
-        selectedProvince.bbox
-
-      );
-
-    }
-
-  }
-
 );
 
 
@@ -2150,421 +2166,22 @@ provinceSelect.addEventListener(
 // =========================================================
 
 municipalitySelect.addEventListener(
+    "change",
+    () => {
 
-  "change",
-
-  event => {
-
-
-    const regionCode =
-      String(
-
-        regionSelect.value
-
-      );
-
-
-    const provinceCode =
-      String(
-
-        provinceSelect.value
-
-      );
-
-
-    const municipalityCode =
-      String(
-
-        event.target.value
-
-      );
-
-
-    populateBarangays(
-
-      regionCode,
-
-      provinceCode,
-
-      municipalityCode
-
-    );
-
-
-    clearAllFilters();
-
-
-    if (
-
-      municipalityCode === ""
-
-    ) {
-
-
-      if (
-
-        provinceCode !== ""
-
-      ) {
-
-
-        setLayerVisibility(
-
-          "regions",
-
-          "visible"
-
+        populateBarangays(
+            regionSelect.value,
+            provinceSelect.value,
+            municipalitySelect.value
         );
 
 
-        setLayerVisibility(
+        updateMap();
 
-          "provinces",
 
-          "visible"
-
-        );
-
-
-        setLayerVisibility(
-
-          "municipalities",
-
-          "visible"
-
-        );
-
-
-        setLayerVisibility(
-
-          "barangays",
-
-          "none"
-
-        );
-
-
-        setLayerOpacity(
-
-          "regions",
-
-          0.35,
-
-          0.5
-
-        );
-
-
-        setLayerOpacity(
-
-          "provinces",
-
-          0.35,
-
-          0.5
-
-        );
-
-
-        setLayerOpacity(
-
-          "municipalities",
-
-          0.7,
-
-          0.8
-
-        );
-
-
-        setLevelFilter(
-
-          "provinces",
-
-          [
-
-            "==",
-
-            [
-
-              "to-string",
-
-              [
-
-                "get",
-
-                "adm2_psgc"
-
-              ]
-
-            ],
-
-            provinceCode
-
-          ]
-
-        );
-
-
-        setLevelFilter(
-
-          "municipalities",
-
-          [
-
-            "==",
-
-            [
-
-              "to-string",
-
-              [
-
-                "get",
-
-                "adm2_psgc"
-
-              ]
-
-            ],
-
-            provinceCode
-
-          ]
-
-        );
-
-
-        const selectedProvince =
-
-          adminHierarchy.provinces.find(
-
-            province =>
-
-
-              String(
-
-                province.adm2_psgc
-
-              )
-
-              ===
-
-              provinceCode
-
-          );
-
-
-        if (
-
-          selectedProvince &&
-
-          selectedProvince.bbox
-
-        ) {
-
-
-          fitToBBox(
-
-            selectedProvince.bbox
-
-          );
-
-        }
-
-      }
-
-
-      else {
-
-
-        showInitialMap();
-
-      }
-
-
-      return;
+        zoomToSelection();
 
     }
-
-
-    setLayerVisibility(
-
-      "regions",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "provinces",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "municipalities",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "barangays",
-
-      "visible"
-
-    );
-
-
-    setLayerOpacity(
-
-      "regions",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "provinces",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "municipalities",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "barangays",
-
-      0.7,
-
-      0.8
-
-    );
-
-
-    setLevelFilter(
-
-      "municipalities",
-
-      [
-
-        "==",
-
-        [
-
-          "to-string",
-
-          [
-
-            "get",
-
-            "adm3_psgc"
-
-          ]
-
-        ],
-
-        municipalityCode
-
-      ]
-
-    );
-
-
-    setLevelFilter(
-
-      "barangays",
-
-      [
-
-        "==",
-
-        [
-
-          "to-string",
-
-          [
-
-            "get",
-
-            "adm3_psgc"
-
-          ]
-
-        ],
-
-        municipalityCode
-
-      ]
-
-    );
-
-
-    const selectedMunicipality =
-
-      adminHierarchy.municipalities.find(
-
-        municipality =>
-
-
-          String(
-
-            municipality.adm3_psgc
-
-          )
-
-          ===
-
-          municipalityCode
-
-      );
-
-
-    if (
-
-      selectedMunicipality &&
-
-      selectedMunicipality.bbox
-
-    ) {
-
-
-      fitToBBox(
-
-        selectedMunicipality.bbox
-
-      );
-
-    }
-
-  }
-
 );
 
 
@@ -2573,443 +2190,253 @@ municipalitySelect.addEventListener(
 // =========================================================
 
 barangaySelect.addEventListener(
+    "change",
+    () => {
 
-  "change",
-
-  event => {
-
-
-    const barangayCode =
-      String(
-
-        event.target.value
-
-      );
+        updateMap();
 
 
-    clearAllFilters();
-
-
-    if (
-
-      barangayCode === ""
-
-    ) {
-
-      return;
+        zoomToSelection();
 
     }
-
-
-    setLayerVisibility(
-
-      "regions",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "provinces",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "municipalities",
-
-      "visible"
-
-    );
-
-
-    setLayerVisibility(
-
-      "barangays",
-
-      "visible"
-
-    );
-
-
-    setLayerOpacity(
-
-      "regions",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "provinces",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "municipalities",
-
-      0.35,
-
-      0.5
-
-    );
-
-
-    setLayerOpacity(
-
-      "barangays",
-
-      0.7,
-
-      0.8
-
-    );
-
-
-    setLevelFilter(
-
-      "barangays",
-
-      [
-
-        "==",
-
-        [
-
-          "to-string",
-
-          [
-
-            "get",
-
-            "adm4_psgc"
-
-          ]
-
-        ],
-
-        barangayCode
-
-      ]
-
-    );
-
-
-    const selectedBarangay =
-
-      adminHierarchy.barangays.find(
-
-        barangay =>
-
-
-          String(
-
-            barangay.adm4_psgc
-
-          )
-
-          ===
-
-          barangayCode
-
-      );
-
-
-    if (
-
-      selectedBarangay &&
-
-      selectedBarangay.bbox
-
-    ) {
-
-
-      fitToBBox(
-
-        selectedBarangay.bbox
-
-      );
-
-    }
-
-  }
-
 );
 
 
 // =========================================================
-// FIT TO ALL REGIONS
-// =========================================================
-
-function fitToAllRegions() {
-
-
-  const bboxes =
-
-    adminHierarchy.regions
-
-      .filter(
-
-        region =>
-
-          region.bbox
-
-      )
-
-      .map(
-
-        region =>
-
-          region.bbox
-
-      );
-
-
-  if (
-
-    bboxes.length ===
-    0
-
-  ) {
-
-    return;
-
-  }
-
-
-  let minLon =
-    Infinity;
-
-
-  let minLat =
-    Infinity;
-
-
-  let maxLon =
-    -Infinity;
-
-
-  let maxLat =
-    -Infinity;
-
-
-  bboxes.forEach(
-
-    bbox => {
-
-
-      minLon =
-        Math.min(
-
-          minLon,
-
-          bbox[0]
-
-        );
-
-
-      minLat =
-        Math.min(
-
-          minLat,
-
-          bbox[1]
-
-        );
-
-
-      maxLon =
-        Math.max(
-
-          maxLon,
-
-          bbox[2]
-
-        );
-
-
-      maxLat =
-        Math.max(
-
-          maxLat,
-
-          bbox[3]
-
-        );
-
-    }
-
-  );
-
-
-  fitToBBox(
-
-    [
-
-      minLon,
-
-      minLat,
-
-      maxLon,
-
-      maxLat
-
-    ]
-
-  );
-
-}
-
-
-// =========================================================
-// FIT TO BBOX
-// =========================================================
-
-function fitToBBox(
-
-  bbox
-
-) {
-
-
-  if (
-
-    !bbox ||
-
-    bbox.length <
-    4
-
-  ) {
-
-    return;
-
-  }
-
-
-  map.fitBounds(
-
-    [
-
-      [
-
-        bbox[0],
-
-        bbox[1]
-
-      ],
-
-      [
-
-        bbox[2],
-
-        bbox[3]
-
-      ]
-
-    ],
-
-    {
-
-      padding:
-        40,
-
-      duration:
-        1000
-
-    }
-
-  );
-
-}
-
-
-// =========================================================
-// INDICATOR SWITCHER
+// INDICATOR CHANGE
 // =========================================================
 
 indicatorSelect.addEventListener(
+    "change",
+    () => {
 
-  "change",
+        updateDynamicJenks();
 
-  event => {
-
-
-    const indicator =
-      event.target.value;
-
-
-    const fillLayers = [
-
-      "regions-fill",
-
-      "provinces-fill",
-
-      "municipalities-fill",
-
-      "barangays-fill"
-
-    ];
+    }
+);
 
 
-    fillLayers.forEach(
+// =========================================================
+// LEGEND
+// =========================================================
 
-      layer => {
+function updateLegend(
+    indicator,
+    breaks
+) {
 
-
-        map.setPaintProperty(
-
-          layer,
-
-          "fill-color",
-
-          createJenksExpression(
-
-            indicator
-
-          )
-
+    const indicatorTitle =
+        document.getElementById(
+            "legend-indicator-title"
         );
 
-      }
 
-    );
+    const label0 =
+        document.getElementById(
+            "legend-label-0"
+        );
 
 
-    updateLegend(
+    const label1 =
+        document.getElementById(
+            "legend-label-1"
+        );
 
-      indicator
 
-    );
+    const label2 =
+        document.getElementById(
+            "legend-label-2"
+        );
 
-  }
 
-);
+    const label3 =
+        document.getElementById(
+            "legend-label-3"
+        );
+
+
+    const label4 =
+        document.getElementById(
+            "legend-label-4"
+        );
+
+
+    // =====================================================
+    // ALWAYS USE 0 AND 100 AS OUTER LIMITS
+    // =====================================================
+
+    const minValue =
+        0;
+
+
+    const maxValue =
+        100;
+
+
+    if (
+        indicatorTitle
+    ) {
+
+        indicatorTitle.textContent =
+            indicator;
+
+    }
+
+
+    if (
+        label0
+    ) {
+
+        label0.textContent =
+            `${formatLegendValue(
+                minValue
+            )}% – ${formatLegendValue(
+                breaks[0]
+            )}%`;
+
+    }
+
+
+    if (
+        label1
+    ) {
+
+        label1.textContent =
+            `${formatLegendValue(
+                breaks[0]
+            )}% – ${formatLegendValue(
+                breaks[1]
+            )}%`;
+
+    }
+
+
+    if (
+        label2
+    ) {
+
+        label2.textContent =
+            `${formatLegendValue(
+                breaks[1]
+            )}% – ${formatLegendValue(
+                breaks[2]
+            )}%`;
+
+    }
+
+
+    if (
+        label3
+    ) {
+
+        label3.textContent =
+            `${formatLegendValue(
+                breaks[2]
+            )}% – ${formatLegendValue(
+                breaks[3]
+            )}%`;
+
+    }
+
+
+    if (
+        label4
+    ) {
+
+        label4.textContent =
+            `${formatLegendValue(
+                breaks[3]
+            )}% – ${formatLegendValue(
+                maxValue
+            )}%`;
+
+    }
+
+}
 
 
 // =========================================================
-// INITIAL LEGEND
+// FORMAT LEGEND VALUE
 // =========================================================
 
-updateLegend(
+function formatLegendValue(
+    value
+) {
 
-  indicatorSelect.value
+    return Number(
+        value
+    ).toFixed(
+        1
+    );
 
-);
+}
+
+
+// =========================================================
+// COLLAPSIBLE LEGEND
+// =========================================================
+
+const legendToggle =
+    document.getElementById(
+        "legend-toggle"
+    );
+
+
+const legendContent =
+    document.getElementById(
+        "legend-content"
+    );
+
+
+const legendArrow =
+    document.getElementById(
+        "legend-arrow"
+    );
+
+
+if (
+    legendToggle &&
+    legendContent &&
+    legendArrow
+) {
+
+    legendToggle.addEventListener(
+        "click",
+        () => {
+
+            const isHidden =
+                legendContent.style.display ===
+                "none";
+
+
+            if (
+                isHidden
+            ) {
+
+                legendContent.style.display =
+                    "block";
+
+
+                legendArrow.textContent =
+                    "▲";
+
+            }
+
+            else {
+
+                legendContent.style.display =
+                    "none";
+
+
+                legendArrow.textContent =
+                    "▼";
+
+            }
+
+        }
+    );
+
+}
 
 
 // =========================================================
@@ -3018,134 +2445,113 @@ updateLegend(
 
 const clickableLayers = [
 
-  "regions-fill",
+    "regions-fill",
 
-  "provinces-fill",
+    "provinces-fill",
 
-  "municipalities-fill",
+    "municipalities-fill",
 
-  "barangays-fill"
+    "barangays-fill"
 
 ];
 
 
 clickableLayers.forEach(
+    layer => {
 
-  layer => {
+        map.on(
+            "click",
+            layer,
+            event => {
 
-
-    map.on(
-
-      "click",
-
-      layer,
-
-      event => {
+                const feature =
+                    event.features[0];
 
 
-        const feature =
-          event.features[0];
+                if (
+                    !feature
+                ) {
+
+                    return;
+
+                }
 
 
-        const properties =
-          feature.properties;
+                const properties =
+                    feature.properties;
 
 
-        let html =
-          "<div class='popup-content'>";
+                let html =
+                    "<div class='popup-content'>";
 
 
-        for (
+                for (
+                    const key in properties
+                ) {
 
-          const key in properties
+                    html += `
 
-        ) {
+                        <div class="property-row">
 
+                            <strong>
+                                ${key}
+                            </strong>
 
-          html += `
+                            <span>
+                                ${properties[key]}
+                            </span>
 
-            <div class="property-row">
+                        </div>
 
-              <strong>
+                    `;
 
-                ${key}
-
-              </strong>
-
-              <span>
-
-                ${properties[key]}
-
-              </span>
-
-            </div>
-
-          `;
-
-        }
+                }
 
 
-        html +=
-          "</div>";
+                html +=
+                    "</div>";
 
 
-        new maplibregl.Popup()
+                new maplibregl.Popup()
 
-          .setLngLat(
+                    .setLngLat(
+                        event.lngLat
+                    )
 
-            event.lngLat
+                    .setHTML(
+                        html
+                    )
 
-          )
+                    .addTo(
+                        map
+                    );
 
-          .setHTML(
-
-            html
-
-          )
-
-          .addTo(
-
-            map
-
-          );
-
-      }
-
-    );
+            }
+        );
 
 
-    map.on(
+        map.on(
+            "mouseenter",
+            layer,
+            () => {
 
-      "mouseenter",
+                map.getCanvas().style.cursor =
+                    "pointer";
 
-      layer,
-
-      () => {
-
-
-        map.getCanvas().style.cursor =
-          "pointer";
-
-      }
-
-    );
+            }
+        );
 
 
-    map.on(
+        map.on(
+            "mouseleave",
+            layer,
+            () => {
 
-      "mouseleave",
+                map.getCanvas().style.cursor =
+                    "";
 
-      layer,
+            }
+        );
 
-      () => {
-
-
-        map.getCanvas().style.cursor =
-          "";
-
-      }
-
-    );
-
-  }
+    }
 );
