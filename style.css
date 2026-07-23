@@ -445,12 +445,24 @@ select {
 @media (max-width: 767px) {
 
 
+    /* ------------------------------------- */
+    /* MOBILE HEADER */
+    /* ------------------------------------- */
+
     #header {
 
         width: 100%;
 
+        max-height: 45vh;
+
+        overflow-y: auto;
+
     }
 
+
+    /* ------------------------------------- */
+    /* FULL-WIDTH MOBILE MAP */
+    /* ------------------------------------- */
 
     #map {
 
@@ -460,6 +472,10 @@ select {
 
     }
 
+
+    /* ------------------------------------- */
+    /* MOBILE CONTROLS */
+    /* ------------------------------------- */
 
     #admin-controls {
 
@@ -491,6 +507,44 @@ select {
         width: auto;
 
         max-width: 100%;
+
+    }
+
+
+    /* ------------------------------------- */
+    /* MOVE LABEL CHECKBOX TO BOTTOM */
+    /* ------------------------------------- */
+
+    .label-toggle-container {
+
+        top: auto;
+
+        right: 10px;
+
+        bottom: 10px;
+
+        z-index: 1001;
+
+    }
+
+
+    /* ------------------------------------- */
+    /* MOVE LEGEND ABOVE CHECKBOX */
+    /* ------------------------------------- */
+
+    .legend {
+
+        top: auto;
+
+        right: 10px;
+
+        bottom: 55px;
+
+        max-width: calc(100vw - 20px);
+
+        min-width: 160px;
+
+        z-index: 1000;
 
     }
 
