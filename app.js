@@ -53,35 +53,59 @@ const jenksColors = [
 // =========================================================
 
 function calculateJenks(
+
     values,
+
     numberOfClasses = 5
+
 ) {
 
     const cleanValues =
         values
+
             .map(
+
                 value =>
+
                     Number(
+
                         value
+
                     )
+
             )
+
             .filter(
+
                 value =>
+
                     Number.isFinite(
+
                         value
+
                     )
+
             )
+
             .sort(
+
                 (
+
                     a,
+
                     b
+
                 ) =>
+
                     a - b
+
             );
 
 
     if (
+
         cleanValues.length === 0
+
     ) {
 
         return [];
@@ -91,14 +115,20 @@ function calculateJenks(
 
     const uniqueValues =
         [
+
             ...new Set(
+
                 cleanValues
+
             )
+
         ];
 
 
     if (
+
         uniqueValues.length === 1
+
     ) {
 
         return [
@@ -117,8 +147,11 @@ function calculateJenks(
 
 
     if (
+
         uniqueValues.length <
+
         numberOfClasses
+
     ) {
 
         const breaks =
@@ -126,21 +159,28 @@ function calculateJenks(
 
 
         for (
+
             let i = 1;
 
             i < numberOfClasses;
 
             i++
+
         ) {
 
             const position =
                 Math.floor(
 
                     (
+
                         i *
+
                         uniqueValues.length
+
                     )
+
                     /
+
                     numberOfClasses
 
                 );
@@ -180,6 +220,7 @@ function calculateJenks(
             {
 
                 length:
+
                     n + 1
 
             },
@@ -191,8 +232,11 @@ function calculateJenks(
                     numberOfClasses + 1
 
                 )
+
                 .fill(
+
                     0
+
                 )
 
         );
@@ -204,6 +248,7 @@ function calculateJenks(
             {
 
                 length:
+
                     n + 1
 
             },
@@ -215,8 +260,11 @@ function calculateJenks(
                     numberOfClasses + 1
 
                 )
+
                 .fill(
+
                     Infinity
+
                 )
 
         );
@@ -280,7 +328,9 @@ function calculateJenks(
 
             const lowerClassLimit =
                 l -
+
                 m +
+
                 1;
 
 
@@ -300,26 +350,33 @@ function calculateJenks(
 
 
             sumSquares +=
+
                 value *
+
                 value;
 
 
             variance =
+
                 sumSquares -
 
                 (
 
                     sum *
+
                     sum
 
                 )
+
                 /
+
                 w;
 
 
             if (
 
                 lowerClassLimit !==
+
                 1
 
             ) {
@@ -337,6 +394,7 @@ function calculateJenks(
                     if (
 
                         varianceCombinations[l][j]
+
                         >=
 
                         variance
@@ -410,6 +468,7 @@ function calculateJenks(
 
         const id =
             lowerClassLimits[k][j] -
+
             2;
 
 
@@ -419,6 +478,7 @@ function calculateJenks(
 
         k =
             lowerClassLimits[k][j] -
+
             1;
 
     }
@@ -427,9 +487,13 @@ function calculateJenks(
     return breaks.sort(
 
         (
+
             a,
+
             b
+
         ) =>
+
             a - b
 
     );
@@ -492,11 +556,13 @@ const map =
     new maplibregl.Map({
 
         container:
+
             "map",
 
         style: {
 
             version:
+
                 8,
 
 
@@ -505,6 +571,7 @@ const map =
                 basemap: {
 
                     type:
+
                         "raster",
 
                     tiles: [
@@ -514,9 +581,11 @@ const map =
                     ],
 
                     tileSize:
+
                         256,
 
                     attribution:
+
                         "© OpenStreetMap contributors © CARTO"
 
                 },
@@ -525,9 +594,11 @@ const map =
                 regions: {
 
                     type:
+
                         "vector",
 
                     url:
+
                         `pmtiles://${regiUrl}`
 
                 },
@@ -536,9 +607,11 @@ const map =
                 provinces: {
 
                     type:
+
                         "vector",
 
                     url:
+
                         `pmtiles://${prvUrl}`
 
                 },
@@ -547,9 +620,11 @@ const map =
                 municipalities: {
 
                     type:
+
                         "vector",
 
                     url:
+
                         `pmtiles://${munUrl}`
 
                 },
@@ -558,9 +633,11 @@ const map =
                 barangays: {
 
                     type:
+
                         "vector",
 
                     url:
+
                         `pmtiles://${brgyUrl}`
 
                 }
@@ -573,12 +650,15 @@ const map =
                 {
 
                     id:
+
                         "basemap",
 
                     type:
+
                         "raster",
 
                     source:
+
                         "basemap"
 
                 },
@@ -587,23 +667,29 @@ const map =
                 {
 
                     id:
+
                         "regions-fill",
 
                     type:
+
                         "fill",
 
                     source:
+
                         "regions",
 
                     "source-layer":
+
                         "regions",
 
                     paint: {
 
                         "fill-color":
+
                             "#FFFFFF",
 
                         "fill-opacity":
+
                             0
 
                     }
@@ -614,26 +700,33 @@ const map =
                 {
 
                     id:
+
                         "regions-outline",
 
                     type:
+
                         "line",
 
                     source:
+
                         "regions",
 
                     "source-layer":
+
                         "regions",
 
                     paint: {
 
                         "line-color":
+
                             "#333333",
 
                         "line-width":
+
                             1,
 
                         "line-opacity":
+
                             0
 
                     }
@@ -644,23 +737,29 @@ const map =
                 {
 
                     id:
+
                         "provinces-fill",
 
                     type:
+
                         "fill",
 
                     source:
+
                         "provinces",
 
                     "source-layer":
+
                         "provinces",
 
                     paint: {
 
                         "fill-color":
+
                             "#FFFFFF",
 
                         "fill-opacity":
+
                             0
 
                     }
@@ -671,26 +770,33 @@ const map =
                 {
 
                     id:
+
                         "provinces-outline",
 
                     type:
+
                         "line",
 
                     source:
+
                         "provinces",
 
                     "source-layer":
+
                         "provinces",
 
                     paint: {
 
                         "line-color":
+
                             "#333333",
 
                         "line-width":
+
                             1,
 
                         "line-opacity":
+
                             0
 
                     }
@@ -701,23 +807,29 @@ const map =
                 {
 
                     id:
+
                         "municipalities-fill",
 
                     type:
+
                         "fill",
 
                     source:
+
                         "municipalities",
 
                     "source-layer":
+
                         "municipalities",
 
                     paint: {
 
                         "fill-color":
+
                             "#FFFFFF",
 
                         "fill-opacity":
+
                             0
 
                     }
@@ -728,26 +840,33 @@ const map =
                 {
 
                     id:
+
                         "municipalities-outline",
 
                     type:
+
                         "line",
 
                     source:
+
                         "municipalities",
 
                     "source-layer":
+
                         "municipalities",
 
                     paint: {
 
                         "line-color":
+
                             "#333333",
 
                         "line-width":
+
                             1,
 
                         "line-opacity":
+
                             0
 
                     }
@@ -758,23 +877,29 @@ const map =
                 {
 
                     id:
+
                         "barangays-fill",
 
                     type:
+
                         "fill",
 
                     source:
+
                         "barangays",
 
                     "source-layer":
+
                         "barangays",
 
                     paint: {
 
                         "fill-color":
+
                             "#FFFFFF",
 
                         "fill-opacity":
+
                             0
 
                     }
@@ -785,26 +910,33 @@ const map =
                 {
 
                     id:
+
                         "barangays-outline",
 
                     type:
+
                         "line",
 
                     source:
+
                         "barangays",
 
                     "source-layer":
+
                         "barangays",
 
                     paint: {
 
                         "line-color":
+
                             "#333333",
 
                         "line-width":
+
                             0.5,
 
                         "line-opacity":
+
                             0
 
                     }
@@ -827,6 +959,7 @@ const map =
             ],
 
         zoom:
+
             5
 
     });
@@ -849,37 +982,49 @@ map.addControl(
 
 const regionSelect =
     document.getElementById(
+
         "region-select"
+
     );
 
 
 const provinceSelect =
     document.getElementById(
+
         "province-select"
+
     );
 
 
 const municipalitySelect =
     document.getElementById(
+
         "municipality-select"
+
     );
 
 
 const barangaySelect =
     document.getElementById(
+
         "barangay-select"
+
     );
 
 
 const indicatorSelect =
     document.getElementById(
+
         "indicator-select"
+
     );
 
 
 const showLabelsCheckbox =
     document.getElementById(
+
         "show-labels-checkbox"
+
     );
 
 
@@ -978,12 +1123,15 @@ function getLabelLevel() {
         return {
 
             layer:
+
                 "barangays-fill",
 
             nameField:
+
                 "adm4_en",
 
             codeField:
+
                 "adm4_psgc"
 
         };
@@ -1000,12 +1148,15 @@ function getLabelLevel() {
         return {
 
             layer:
+
                 "barangays-fill",
 
             nameField:
+
                 "adm4_en",
 
             codeField:
+
                 "adm4_psgc"
 
         };
@@ -1022,12 +1173,15 @@ function getLabelLevel() {
         return {
 
             layer:
+
                 "municipalities-fill",
 
             nameField:
+
                 "adm3_en",
 
             codeField:
+
                 "adm3_psgc"
 
         };
@@ -1044,12 +1198,15 @@ function getLabelLevel() {
         return {
 
             layer:
+
                 "provinces-fill",
 
             nameField:
+
                 "adm2_en",
 
             codeField:
+
                 "adm2_psgc"
 
         };
@@ -1060,12 +1217,15 @@ function getLabelLevel() {
     return {
 
         layer:
+
             "regions-fill",
 
         nameField:
+
             "adm1_en",
 
         codeField:
+
             "adm1_psgc"
 
     };
@@ -1078,7 +1238,9 @@ function getLabelLevel() {
 // =========================================================
 
 function getPolygonCentroid(
+
     geometry
+
 ) {
 
     let coordinates =
@@ -1088,6 +1250,7 @@ function getPolygonCentroid(
     if (
 
         geometry.type ===
+
         "Polygon"
 
     ) {
@@ -1101,6 +1264,7 @@ function getPolygonCentroid(
     else if (
 
         geometry.type ===
+
         "MultiPolygon"
 
     ) {
@@ -1167,6 +1331,7 @@ function getPolygonCentroid(
                 if (
 
                     area >
+
                     largestArea
 
                 ) {
@@ -1194,7 +1359,9 @@ function getPolygonCentroid(
     if (
 
         !coordinates
+
         ||
+
         coordinates.length === 0
 
     ) {
@@ -1244,6 +1411,7 @@ function getPolygonCentroid(
 
         const cross =
             x1 * y2 -
+
             x2 * y1;
 
 
@@ -1256,10 +1424,13 @@ function getPolygonCentroid(
             (
 
                 x1 +
+
                 x2
 
             )
+
             *
+
             cross;
 
 
@@ -1268,10 +1439,13 @@ function getPolygonCentroid(
             (
 
                 y1 +
+
                 y2
 
             )
+
             *
+
             cross;
 
     }
@@ -1293,12 +1467,16 @@ function getPolygonCentroid(
 
 
     x /=
+
         6 *
+
         area;
 
 
     y /=
+
         6 *
+
         area;
 
 
@@ -1331,7 +1509,9 @@ function formatLabelText(
             text
 
         )
+
         .trim()
+
         .replace(
 
             /\s+/g,
@@ -1404,15 +1584,18 @@ function formatLabelText(
                 currentLine
 
                 +
+
                 " "
 
                 +
+
                 word;
 
 
             if (
 
                 proposedLine.length <=
+
                 maxCharacters
 
             ) {
@@ -1467,12 +1650,16 @@ function formatLabelText(
 // =========================================================
 
 function createLabelElement(
+
     name
+
 ) {
 
     const labelElement =
         document.createElement(
+
             "div"
+
         );
 
 
@@ -1496,7 +1683,9 @@ function createLabelElement(
 
             const lineElement =
                 document.createElement(
+
                     "div"
+
                 );
 
 
@@ -1537,6 +1726,317 @@ function createLabelElement(
 
 
 // =========================================================
+// CHECK IF SINGLE BARANGAY IS SELECTED
+// =========================================================
+
+function isSingleBarangaySelected() {
+
+    return (
+
+        barangaySelect
+
+        &&
+
+        barangaySelect.value !== ""
+
+    );
+
+}
+
+
+// =========================================================
+// HIDE LEGEND
+// =========================================================
+
+function hideLegend() {
+
+    const legend =
+        document.querySelector(
+
+            ".legend"
+
+        );
+
+
+    if (
+
+        legend
+
+    ) {
+
+        legend.style.display =
+            "none";
+
+    }
+
+}
+
+
+// =========================================================
+// SHOW LEGEND
+// =========================================================
+
+function showLegend() {
+
+    const legend =
+        document.querySelector(
+
+            ".legend"
+
+        );
+
+
+    if (
+
+        legend
+
+    ) {
+
+        legend.style.display =
+            "block";
+
+    }
+
+}
+
+
+// =========================================================
+// UPDATE SELECTED BARANGAY LABEL
+// =========================================================
+
+function updateSelectedBarangayLabel(
+
+    indicator,
+
+    value
+
+) {
+
+    clearLabels();
+
+
+    if (
+
+        !showLabelsCheckbox
+
+        ||
+
+        !showLabelsCheckbox.checked
+
+    ) {
+
+        return;
+
+    }
+
+
+    const features =
+        map.queryRenderedFeatures(
+
+            undefined,
+
+            {
+
+                layers:
+
+                    [
+
+                        "barangays-fill"
+
+                    ]
+
+            }
+
+        );
+
+
+    const selectedFeature =
+        features.find(
+
+            feature =>
+
+                String(
+
+                    feature.properties.adm4_psgc
+
+                )
+
+                ===
+
+                String(
+
+                    barangaySelect.value
+
+                )
+
+        );
+
+
+    if (
+
+        !selectedFeature
+
+    ) {
+
+        return;
+
+    }
+
+
+    const properties =
+        selectedFeature.properties;
+
+
+    const barangayName =
+        properties.adm4_en;
+
+
+    const center =
+        getPolygonCentroid(
+
+            selectedFeature.geometry
+
+        );
+
+
+    if (
+
+        !center
+
+        ||
+
+        !barangayName
+
+    ) {
+
+        return;
+
+    }
+
+
+    const labelElement =
+        document.createElement(
+
+            "div"
+
+        );
+
+
+    labelElement.className =
+        "map-label";
+
+
+    // =====================================================
+    // BARANGAY NAME
+    // =====================================================
+
+    const nameElement =
+        document.createElement(
+
+            "div"
+
+        );
+
+
+    nameElement.className =
+        "map-label-line";
+
+
+    nameElement.style.fontWeight =
+        "bold";
+
+
+    nameElement.style.whiteSpace =
+        "nowrap";
+
+
+    nameElement.textContent =
+        barangayName;
+
+
+    labelElement.appendChild(
+
+        nameElement
+
+    );
+
+
+    // =====================================================
+    // INDICATOR AND VALUE
+    // =====================================================
+
+    const valueElement =
+        document.createElement(
+
+            "div"
+
+        );
+
+
+    valueElement.className =
+        "map-label-line";
+
+
+    valueElement.style.whiteSpace =
+        "nowrap";
+
+
+    valueElement.textContent =
+
+        `${indicator}: ${formatLegendValue(
+
+            value
+
+        )}%`;
+
+
+    labelElement.appendChild(
+
+        valueElement
+
+    );
+
+
+    const marker =
+        new maplibregl.Marker(
+
+            {
+
+                element:
+
+                    labelElement,
+
+                anchor:
+
+                    "center"
+
+            }
+
+        )
+
+        .setLngLat(
+
+            center
+
+        )
+
+        .addTo(
+
+            map
+
+        );
+
+
+    mapLabels.push(
+
+        marker
+
+    );
+
+}
+
+
+// =========================================================
 // UPDATE MAP LABELS
 // =========================================================
 
@@ -1545,7 +2045,9 @@ function updateMapLabels() {
     if (
 
         !showLabelsCheckbox
+
         ||
+
         !showLabelsCheckbox.checked
 
     ) {
@@ -1559,6 +2061,92 @@ function updateMapLabels() {
 
 
     clearLabels();
+
+
+    if (
+
+        isSingleBarangaySelected()
+
+    ) {
+
+        const indicator =
+            indicatorSelect.value;
+
+
+        const features =
+            map.queryRenderedFeatures(
+
+                undefined,
+
+                {
+
+                    layers:
+
+                        [
+
+                            "barangays-fill"
+
+                        ]
+
+                }
+
+            );
+
+
+        const selectedFeature =
+            features.find(
+
+                feature =>
+
+                    String(
+
+                        feature.properties.adm4_psgc
+
+                    )
+
+                    ===
+
+                    String(
+
+                        barangaySelect.value
+
+                    )
+
+            );
+
+
+        if (
+
+            selectedFeature
+
+        ) {
+
+            const value =
+                Number(
+
+                    selectedFeature.properties[
+
+                        indicator
+
+                    ]
+
+                );
+
+
+            updateSelectedBarangayLabel(
+
+                indicator,
+
+                value
+
+            );
+
+        }
+
+
+        return;
+
+    }
 
 
     const {
@@ -1669,7 +2257,9 @@ function updateMapLabels() {
             if (
 
                 !center
+
                 ||
+
                 !name
 
             ) {
@@ -1693,9 +2283,11 @@ function updateMapLabels() {
                     {
 
                         element:
+
                             labelElement,
 
                         anchor:
+
                             "center"
 
                     }
@@ -2038,6 +2630,7 @@ function populateProvinces(
                         province.adm1_psgc
 
                     )
+
                     ===
 
                     String(
@@ -2137,6 +2730,7 @@ function populateMunicipalities(
                         municipality.adm1_psgc
 
                     )
+
                     ===
 
                     String(
@@ -2166,6 +2760,7 @@ function populateMunicipalities(
                         municipality.adm2_psgc
 
                     )
+
                     ===
 
                     String(
@@ -2252,6 +2847,7 @@ function populateBarangays(
                         barangay.adm1_psgc
 
                     )
+
                     ===
 
                     String(
@@ -2281,6 +2877,7 @@ function populateBarangays(
                         barangay.adm2_psgc
 
                     )
+
                     ===
 
                     String(
@@ -2310,6 +2907,7 @@ function populateBarangays(
                         barangay.adm3_psgc
 
                     )
+
                     ===
 
                     String(
@@ -2394,9 +2992,11 @@ function getCurrentRecords() {
         return {
 
             level:
+
                 "barangays",
 
             records:
+
                 []
 
         };
@@ -2413,9 +3013,11 @@ function getCurrentRecords() {
         return {
 
             level:
+
                 "barangays",
 
             records:
+
                 []
 
         };
@@ -2432,9 +3034,11 @@ function getCurrentRecords() {
         return {
 
             level:
+
                 "municipalities",
 
             records:
+
                 []
 
         };
@@ -2451,9 +3055,11 @@ function getCurrentRecords() {
         return {
 
             level:
+
                 "provinces",
 
             records:
+
                 []
 
         };
@@ -2464,9 +3070,11 @@ function getCurrentRecords() {
     return {
 
         level:
+
             "regions",
 
         records:
+
             []
 
     };
@@ -2564,6 +3172,82 @@ function updateDynamicJenks() {
         return;
 
     }
+
+
+    // =====================================================
+    // SINGLE BARANGAY SELECTED
+    // =====================================================
+
+    if (
+
+        isSingleBarangaySelected()
+
+    ) {
+
+        hideLegend();
+
+
+        const selectedFeature =
+            features.find(
+
+                feature =>
+
+                    String(
+
+                        feature.properties.adm4_psgc
+
+                    )
+
+                    ===
+
+                    String(
+
+                        barangaySelect.value
+
+                    )
+
+            );
+
+
+        if (
+
+            selectedFeature
+
+        ) {
+
+            const selectedValue =
+                Number(
+
+                    selectedFeature.properties[
+
+                        indicator
+
+                    ]
+
+                );
+
+
+            updateSelectedBarangayLabel(
+
+                indicator,
+
+                selectedValue
+
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    // =====================================================
+    // NORMAL MULTI-POLYGON MAP
+    // =====================================================
+
+    showLegend();
 
 
     const breaks =
@@ -3139,6 +3823,7 @@ function updateMap() {
 
             const isActive =
                 currentLevel ===
+
                 level;
 
 
@@ -3150,9 +3835,13 @@ function updateMap() {
 
                 isActive
 
-                    ? 1.0
+                    ?
 
-                    : 0
+                    1.0
+
+                    :
+
+                    0
 
             );
 
@@ -3165,9 +3854,13 @@ function updateMap() {
 
                 isActive
 
-                    ? 1.0
+                    ?
 
-                    : 0
+                    1.0
+
+                    :
+
+                    0
 
             );
 
@@ -3188,7 +3881,9 @@ function updateMap() {
             if (
 
                 showLabelsCheckbox
+
                 &&
+
                 showLabelsCheckbox.checked
 
             ) {
@@ -3258,15 +3953,19 @@ function getZoomTarget() {
         return {
 
             sourceId:
+
                 "barangays",
 
             sourceLayer:
+
                 "barangays",
 
             propertyName:
+
                 "adm4_psgc",
 
             targetCode:
+
                 barangayCode
 
         };
@@ -3283,15 +3982,19 @@ function getZoomTarget() {
         return {
 
             sourceId:
+
                 "municipalities",
 
             sourceLayer:
+
                 "municipalities",
 
             propertyName:
+
                 "adm3_psgc",
 
             targetCode:
+
                 municipalityCode
 
         };
@@ -3308,15 +4011,19 @@ function getZoomTarget() {
         return {
 
             sourceId:
+
                 "provinces",
 
             sourceLayer:
+
                 "provinces",
 
             propertyName:
+
                 "adm2_psgc",
 
             targetCode:
+
                 provinceCode
 
         };
@@ -3333,15 +4040,19 @@ function getZoomTarget() {
         return {
 
             sourceId:
+
                 "regions",
 
             sourceLayer:
+
                 "regions",
 
             propertyName:
+
                 "adm1_psgc",
 
             targetCode:
+
                 regionCode
 
         };
@@ -3380,6 +4091,7 @@ function extendBoundsFromGeometry(
     if (
 
         geometry.type ===
+
         "Polygon"
 
     ) {
@@ -3412,6 +4124,7 @@ function extendBoundsFromGeometry(
     else if (
 
         geometry.type ===
+
         "MultiPolygon"
 
     ) {
@@ -3469,6 +4182,7 @@ function findMatchingSourceFeatures(
             {
 
                 sourceLayer:
+
                     target.sourceLayer
 
             }
@@ -3489,6 +4203,7 @@ function findMatchingSourceFeatures(
                 ]
 
             )
+
             ===
 
             target.targetCode
@@ -3525,9 +4240,11 @@ function zoomToSelection() {
             {
 
                 padding:
+
                     50,
 
                 duration:
+
                     600
 
             }
@@ -3545,6 +4262,7 @@ function zoomToSelection() {
         if (
 
             requestId !==
+
             zoomRequestId
 
         ) {
@@ -3626,12 +4344,15 @@ function zoomToSelection() {
             {
 
                 padding:
+
                     60,
 
                 duration:
+
                     1200,
 
                 maxZoom:
+
                     12
 
             }
@@ -3670,9 +4391,11 @@ function zoomToSelection() {
         {
 
             padding:
+
                 20,
 
             duration:
+
                 0
 
         }
@@ -3689,6 +4412,7 @@ function zoomToSelection() {
             if (
 
                 requestId !==
+
                 zoomRequestId
 
             ) {
@@ -3705,6 +4429,7 @@ function zoomToSelection() {
                     if (
 
                         requestId !==
+
                         zoomRequestId
 
                     ) {
@@ -3953,11 +4678,17 @@ function updateLegend(
     if (
 
         !values
+
         ||
+
         values.length === 0
+
         ||
+
         !breaks
+
         ||
+
         breaks.length !== 4
 
     ) {
@@ -4204,9 +4935,13 @@ const legendArrow =
 if (
 
     legendToggle
+
     &&
+
     legendContent
+
     &&
+
     legendArrow
 
 ) {
@@ -4220,6 +4955,7 @@ if (
             const isHidden =
 
                 legendContent.style.display ===
+
                 "none";
 
 
@@ -4270,7 +5006,9 @@ map.on(
         if (
 
             showLabelsCheckbox
+
             &&
+
             showLabelsCheckbox.checked
 
         ) {
@@ -4338,12 +5076,15 @@ function getActivePopupLayer() {
         return {
 
             layer:
+
                 "barangays-fill",
 
             parentField:
+
                 "adm4_psgc",
 
             parentCode:
+
                 Number(
 
                     barangayCode
@@ -4364,12 +5105,15 @@ function getActivePopupLayer() {
         return {
 
             layer:
+
                 "barangays-fill",
 
             parentField:
+
                 "adm3_psgc",
 
             parentCode:
+
                 Number(
 
                     municipalityCode
@@ -4390,12 +5134,15 @@ function getActivePopupLayer() {
         return {
 
             layer:
+
                 "municipalities-fill",
 
             parentField:
+
                 "adm2_psgc",
 
             parentCode:
+
                 Number(
 
                     provinceCode
@@ -4416,12 +5163,15 @@ function getActivePopupLayer() {
         return {
 
             layer:
+
                 "provinces-fill",
 
             parentField:
+
                 "adm1_psgc",
 
             parentCode:
+
                 Number(
 
                     regionCode
@@ -4436,12 +5186,15 @@ function getActivePopupLayer() {
     return {
 
         layer:
+
             "regions-fill",
 
         parentField:
+
             null,
 
         parentCode:
+
             null
 
     };
@@ -4558,6 +5311,7 @@ function createPopupHTML(
             if (
 
                 properties[indicator] !==
+
                 undefined
 
             ) {
@@ -4594,22 +5348,23 @@ function createPopupHTML(
 
                                 )
 
-                                ?
+                                    ?
 
-                                formatLegendValue(
+                                    formatLegendValue(
 
-                                    value
+                                        value
 
-                                )
-                                + "%"
+                                    )
 
-                                :
+                                    + "%"
 
-                                properties[
+                                    :
 
-                                    indicator
+                                    properties[
 
-                                ]
+                                        indicator
+
+                                    ]
 
                             }
 
@@ -4651,7 +5406,9 @@ function handlePopupClick(
 
     const feature =
         event.features
+
         &&
+
         event.features[0];
 
 
@@ -4691,6 +5448,7 @@ function handlePopupClick(
         if (
 
             featureParentCode !==
+
             activePopup.parentCode
 
         ) {
@@ -4750,7 +5508,6 @@ clickableLayers.forEach(
 
     layer => {
 
-
         map.on(
 
             "click",
@@ -4766,6 +5523,7 @@ clickableLayers.forEach(
                 if (
 
                     activePopup.layer !==
+
                     layer
 
                 ) {
@@ -4801,11 +5559,13 @@ clickableLayers.forEach(
                 if (
 
                     activePopup.layer ===
+
                     layer
 
                 ) {
 
                     map.getCanvas().style.cursor =
+
                         "pointer";
 
                 }
