@@ -1375,6 +1375,44 @@ function getActivePopupLayer() {
 // =========================================================
 // POPUP HTML
 // =========================================================
+function buildMaterialRowHTML(
+    label,
+    value,
+) {
+    return `
+                <div
+                    class="property-row"
+                >
+                    <strong>
+                        ${label}
+                    </strong>
+                    <span>
+                        ${
+                            Number.isFinite(value)
+                                ? formatLegendValue(value) + "%"
+                                : "N/A"
+                        }
+                    </span>
+                </div>
+            `;
+}
+function buildTypologyRowHTML(
+    indicator,
+    value,
+) {
+    return `
+                <div
+                    class="property-row-sub"
+                >
+                    <em>
+                        ${indicator}
+                    </em>
+                    <span>
+                        ${formatLegendValue(value)}%
+                    </span>
+                </div>
+            `;
+}
 function createPopupHTML(properties) {
     let adminName = "";
     const nameFields = ["adm1_en", "adm2_en", "adm3_en", "adm4_en"];
@@ -1400,60 +1438,52 @@ function createPopupHTML(properties) {
             properties,
             selection,
         );
-        html += `
-                <div
-                    class="property-row"
-                >
-                    <strong>
-                        ${selection.key}
-                    </strong>
-                    <span>
-                        ${
-                            Number.isFinite(value)
-                                ? formatLegendValue(value) + "%"
-                                : "N/A"
-                        }
-                    </span>
-                </div>
-            `;
+        html += buildMaterialRowHTML(
+            selection.key,
+            value,
+        );
     } else if (selection.type === "material") {
         const value = getFeatureValue(
             properties,
             selection,
         );
-        html += `
-                <div
-                    class="property-row"
-                >
-                    <strong>
-                        ${selection.key}
-                    </strong>
-                    <span>
-                        ${
-                            Number.isFinite(value)
-                                ? formatLegendValue(value) + "%"
-                                : "N/A"
-                        }
-                    </span>
-                </div>
-            `;
-    } else {
-        indicatorOrder.forEach((indicator) => {
-            const value = Number(properties[indicator]);
-            if (Number.isFinite(value)) {
-                html += `
-                            <div
-                                class="property-row"
-                            >
-                                <strong>
-                                    ${indicator}
-                                </strong>
-                                <span>
-                                    ${formatLegendValue(value) + "%"}
-                                </span>
-                            </div>
-                        `;
+        html += buildMaterialRowHTML(
+            selection.key,
+            value,
+        );
+        const subIndicators = materialGroups[selection.key] || [];
+        subIndicators.forEach((indicator) => {
+            const subValue = Number(properties[indicator]);
+            if (Number.isFinite(subValue)) {
+                html += buildTypologyRowHTML(
+                    indicator,
+                    subValue,
+                );
             }
+        });
+    } else {
+        Object.keys(materialGroups).forEach((material) => {
+            const materialValue = getFeatureValue(
+                properties,
+                {
+                    type: "material",
+                    key: material,
+                    label: material,
+                },
+            );
+            html += buildMaterialRowHTML(
+                material,
+                materialValue,
+            );
+            materialGroups[material].forEach((indicator) => {
+                const subValue = Number(properties[indicator]);
+                if (Number.isFinite(subValue)) {
+                    html += buildTypologyRowHTML(
+                        indicator,
+                        subValue,
+                    );
+                }
+            });
         });
     }
     html += "</div>";

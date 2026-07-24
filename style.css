@@ -166,6 +166,16 @@ select {
 .property-row strong {
   font-weight: bold;
 }
+.property-row-sub {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 2px 0 2px 15px;
+}
+.property-row-sub em {
+  font-style: italic;
+  font-weight: normal;
+}
 /* ========================================= */
 /* DESKTOP LAYOUT */
 /* ========================================= */
