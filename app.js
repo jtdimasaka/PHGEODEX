@@ -1524,7 +1524,12 @@ function getActivePopupLayer() {
     if (municipalityCode !== "") {
         return {
             layer: "barangays-fill",
-            parentField: "adm3_psgc",
+            parentField:
+                String(municipalityCode) === MANILA_MUNICIPALITY_CODE
+                    ? "adm2_psgc"
+                    : getNcrDistrictCities(provinceCode)
+                      ? "adm2_psgc"
+                      : "adm3_psgc",
             parentCode: Number(municipalityCode),
         };
     }
