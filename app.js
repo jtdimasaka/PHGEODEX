@@ -486,6 +486,62 @@ function populateRegions() {
     populateProvinces("");
 }
 // =========================================================
+// NCR DISTRICT WORKAROUND
+//
+// NCR has no true provinces, only four numbered "Districts"
+// (First/Second/Third/Fourth). The source PSGC shapefiles tag every NCR
+// city with its own city code as adm2_psgc instead of the true district
+// code, so the normal adm2_psgc match used everywhere else in the
+// country never matches for NCR. This lookup restores the real
+// district -> city relationship (per PSA/PSGC official groupings).
+// =========================================================
+const NCR_DISTRICT_MUNICIPALITIES = {
+    1303900000: [1380600000], // First District: City of Manila
+    1307400000: [
+        1380500000, // City of Mandaluyong
+        1380700000, // City of Marikina
+        1381200000, // City of Pasig
+        1381300000, // Quezon City
+        1381400000, // City of San Juan
+    ], // Second District
+    1307500000: [
+        1380100000, // City of Caloocan
+        1380400000, // City of Malabon
+        1380900000, // City of Navotas
+        1381600000, // City of Valenzuela
+    ], // Third District
+    1307600000: [
+        1380200000, // City of Las Piñas
+        1380300000, // City of Makati
+        1380800000, // City of Muntinlupa
+        1381000000, // City of Parañaque
+        1381100000, // Pasay City
+        1381701000, // Pateros
+        1381500000, // City of Taguig
+    ], // Fourth District
+};
+function getNcrDistrictCities(provinceCode) {
+    return NCR_DISTRICT_MUNICIPALITIES[Number(provinceCode)] || null;
+}
+// =========================================================
+// MANILA BARANGAY WORKAROUND
+//
+// Manila's barangay records are additionally tagged with Manila's
+// internal zone codes as adm3_psgc (e.g. Tondo, Sampaloc, Quiapo),
+// rather than the City of Manila code used everywhere else. adm2_psgc
+// stays reliably at the city level, so use it instead for Manila only.
+// =========================================================
+const MANILA_MUNICIPALITY_CODE = "1380600000";
+function barangayMatchesMunicipality(
+    barangay,
+    municipalityCode,
+) {
+    if (String(municipalityCode) === MANILA_MUNICIPALITY_CODE) {
+        return String(barangay.adm2_psgc) === String(municipalityCode);
+    }
+    return String(barangay.adm3_psgc) === String(municipalityCode);
+}
+// =========================================================
 // POPULATE PROVINCES
 // =========================================================
 function populateProvinces(regionCode) {
@@ -549,10 +605,17 @@ function populateMunicipalities(
         );
     }
     if (provinceCode !== "") {
-        municipalities = municipalities.filter(
-            (municipality) =>
-                String(municipality.adm2_psgc) === String(provinceCode),
-        );
+        const ncrCities = getNcrDistrictCities(provinceCode);
+        if (ncrCities) {
+            municipalities = municipalities.filter((municipality) =>
+                ncrCities.includes(Number(municipality.adm3_psgc)),
+            );
+        } else {
+            municipalities = municipalities.filter(
+                (municipality) =>
+                    String(municipality.adm2_psgc) === String(provinceCode),
+            );
+        }
     }
     municipalities.forEach((municipality) => {
         addOption(
@@ -584,14 +647,24 @@ function populateBarangays(
         );
     }
     if (provinceCode !== "") {
-        barangays = barangays.filter(
-            (barangay) => String(barangay.adm2_psgc) === String(provinceCode),
-        );
+        const ncrCities = getNcrDistrictCities(provinceCode);
+        if (ncrCities) {
+            barangays = barangays.filter((barangay) =>
+                ncrCities.includes(Number(barangay.adm2_psgc)),
+            );
+        } else {
+            barangays = barangays.filter(
+                (barangay) =>
+                    String(barangay.adm2_psgc) === String(provinceCode),
+            );
+        }
     }
     if (municipalityCode !== "") {
-        barangays = barangays.filter(
-            (barangay) =>
-                String(barangay.adm3_psgc) === String(municipalityCode),
+        barangays = barangays.filter((barangay) =>
+            barangayMatchesMunicipality(
+                barangay,
+                municipalityCode,
+            ),
         );
     }
     barangays.forEach((barangay) => {
@@ -661,15 +734,30 @@ function updateMapFilters() {
         "provinces-outline",
         map.getFilter("provinces-fill"),
     );
+    const ncrCities = getNcrDistrictCities(provinceCode);
+    let municipalitiesFilter;
+    if (provinceCode === "") {
+        municipalitiesFilter = ["==", ["get", "adm2_psgc"], -999999999];
+    } else if (ncrCities) {
+        municipalitiesFilter = [
+            "in",
+            ["get", "adm3_psgc"],
+            ["literal", ncrCities],
+        ];
+    } else {
+        municipalitiesFilter = [
+            "==",
+            ["get", "adm2_psgc"],
+            Number(provinceCode),
+        ];
+    }
     map.setFilter(
         "municipalities-fill",
-        provinceCode === ""
-            ? ["==", ["get", "adm2_psgc"], -999999999]
-            : ["==", ["get", "adm2_psgc"], Number(provinceCode)],
+        municipalitiesFilter,
     );
     map.setFilter(
         "municipalities-outline",
-        map.getFilter("municipalities-fill"),
+        municipalitiesFilter,
     );
     if (municipalityCode === "") {
         map.setFilter(
@@ -690,13 +778,17 @@ function updateMapFilters() {
             map.getFilter("barangays-fill"),
         );
     } else {
+        const barangaysFilter =
+            String(municipalityCode) === MANILA_MUNICIPALITY_CODE
+                ? ["==", ["get", "adm2_psgc"], Number(municipalityCode)]
+                : ["==", ["get", "adm3_psgc"], Number(municipalityCode)];
         map.setFilter(
             "barangays-fill",
-            ["==", ["get", "adm3_psgc"], Number(municipalityCode)],
+            barangaysFilter,
         );
         map.setFilter(
             "barangays-outline",
-            map.getFilter("barangays-fill"),
+            barangaysFilter,
         );
     }
 }
