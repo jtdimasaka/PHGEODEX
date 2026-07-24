@@ -1514,6 +1514,8 @@ function getActivePopupLayer() {
     const provinceCode = provinceSelect.value;
     const municipalityCode = municipalitySelect.value;
     const barangayCode = barangaySelect.value;
+
+    // Specific barangay selected
     if (barangayCode !== "") {
         return {
             layer: "barangays-fill",
@@ -1521,25 +1523,36 @@ function getActivePopupLayer() {
             parentCode: Number(barangayCode),
         };
     }
+
+    // Specific municipality/city selected
     if (municipalityCode !== "") {
         return {
             layer: "barangays-fill",
             parentField:
-                String(municipalityCode) === MANILA_MUNICIPALITY_CODE
+                getNcrDistrictCities(provinceCode) !== null
                     ? "adm2_psgc"
-                    : getNcrDistrictCities(provinceCode)
-                      ? "adm2_psgc"
-                      : "adm3_psgc",
+                    : "adm3_psgc",
             parentCode: Number(municipalityCode),
         };
     }
+
+    // Municipality/City = ALL
     if (provinceCode !== "") {
+        const isNcr =
+            getNcrDistrictCities(provinceCode) !== null;
+
         return {
             layer: "municipalities-fill",
-            parentField: "adm2_psgc",
-            parentCode: Number(provinceCode),
+            parentField: isNcr
+                ? null
+                : "adm2_psgc",
+            parentCode: isNcr
+                ? null
+                : Number(provinceCode),
         };
     }
+
+    // Province = ALL, region selected
     if (regionCode !== "") {
         return {
             layer: "provinces-fill",
@@ -1547,6 +1560,8 @@ function getActivePopupLayer() {
             parentCode: Number(regionCode),
         };
     }
+
+    // Philippines level
     return {
         layer: "regions-fill",
         parentField: null,
