@@ -146,6 +146,10 @@ select {
   height: 15px;
   display: inline-block;
 }
+.legend-single-value {
+  font-size: 13px;
+  padding: 2px 0;
+}
 /* ========================================= */
 /* POPUP */
 /* ========================================= */

@@ -765,11 +765,18 @@ function updateDynamicJenks() {
         "fill-opacity",
         1,
     );
-    updateLegend(
-        selection,
-        breaks,
-        values,
-    );
+    if (barangaySelect.value !== "" && features.length > 0) {
+        updateLegendSingleBarangay(
+            selection,
+            features[0],
+        );
+    } else {
+        updateLegend(
+            selection,
+            breaks,
+            values,
+        );
+    }
 }
 // =========================================================
 // CREATE MATERIAL EXPRESSION
@@ -1193,6 +1200,8 @@ function updateLegend(
     values,
 ) {
     const indicatorTitle = document.getElementById("legend-indicator-title");
+    const legendClasses = document.getElementById("legend-classes");
+    const legendSingleValue = document.getElementById("legend-single-value");
     const labels = [
         document.getElementById("legend-label-0"),
         document.getElementById("legend-label-1"),
@@ -1205,6 +1214,12 @@ function updateLegend(
     }
     if (!values || values.length === 0) {
         return;
+    }
+    if (legendClasses) {
+        legendClasses.style.display = "";
+    }
+    if (legendSingleValue) {
+        legendSingleValue.style.display = "none";
     }
     const minValue = Math.min(...values);
     const maxValue = Math.max(...values);
@@ -1237,6 +1252,49 @@ function updateLegend(
             }
         },
     );
+}
+// =========================================================
+// UPDATE LEGEND FOR A SINGLE SELECTED BARANGAY
+// =========================================================
+function updateLegendSingleBarangay(
+    selection,
+    feature,
+) {
+    const indicatorTitle = document.getElementById("legend-indicator-title");
+    const legendClasses = document.getElementById("legend-classes");
+    const legendSingleValue = document.getElementById("legend-single-value");
+    const properties = feature.properties;
+    const value = getFeatureValue(
+        properties,
+        selection,
+    );
+    const barangayName =
+        properties.adm4_en
+        ||
+        (
+            adminHierarchy
+            &&
+            adminHierarchy.barangays.find(
+                (barangay) =>
+                    String(barangay.adm4_psgc) === barangaySelect.value,
+            )
+        )?.adm4_en
+        ||
+        "";
+    const label =
+        selection.type === "indicator" ? selection.key : selection.label;
+    if (indicatorTitle) {
+        indicatorTitle.textContent = barangayName;
+    }
+    if (legendSingleValue) {
+        legendSingleValue.textContent = `${label}: ${
+            Number.isFinite(value) ? formatLegendValue(value) + "%" : "N/A"
+        }`;
+        legendSingleValue.style.display = "block";
+    }
+    if (legendClasses) {
+        legendClasses.style.display = "none";
+    }
 }
 // =========================================================
 // COLLAPSIBLE LEGEND
