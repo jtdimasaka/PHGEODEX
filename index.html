@@ -1,419 +1,133 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>PHGEODEX</title>
-
-
-  <link
-    href="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.css"
-    rel="stylesheet"
-  >
-
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
-
-</head>
-
-
-<body>
-
-
-  <!-- ========================================= -->
-  <!-- HEADER -->
-  <!-- ========================================= -->
-
-  <div id="header">
-
-
-    <h1>
-      PHGEODEX
-    </h1>
-
-
-    <p>
-      Philippine Geospatial Exposure Database Using Census Data
-      Across Administrative Levels
-    </p>
-
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PHGEODEX</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <!-- ========================================= -->
-    <!-- MATERIAL CLASS -->
+    <!-- HEADER -->
     <!-- ========================================= -->
-
-    <div class="control-group">
-
-
-      <label for="material-select">
-        Material Class:
-      </label>
-
-
-      <select id="material-select">
-
-
-        <option value="">
-          ALL
-        </option>
-
-
-        <option value="Wood">
-          Wood
-        </option>
-
-
-        <option value="Masonry">
-          Masonry
-        </option>
-
-
-        <option value="Concrete">
-          Concrete
-        </option>
-
-
-        <option value="Steel">
-          Steel
-        </option>
-
-
-      </select>
-
-
-    </div>
-
-
-    <!-- ========================================= -->
-    <!-- BUILDING TYPOLOGY -->
-    <!-- ========================================= -->
-
-    <div class="control-group">
-
-
-      <label for="indicator-select">
-        Building Typology:
-      </label>
-
-
-      <select id="indicator-select">
-
-
-        <option value="">
-          ALL
-        </option>
-
-
-      </select>
-
-
-    </div>
-
-
-    <!-- ========================================= -->
-    <!-- ADMINISTRATIVE FILTERS -->
-    <!-- ========================================= -->
-
-    <div id="admin-controls">
-
-
-      <div class="admin-control">
-
-
-        <label for="region-select">
-          Region:
-        </label>
-
-
-        <select id="region-select">
-
-
-          <option value="">
-            ALL
-          </option>
-
-
+    <div id="header">
+      <h1>PHGEODEX</h1>
+      <p>Philippine Geospatial Exposure Database Using Census Data Across Administrative Levels</p>
+      <!-- ========================================= -->
+      <!-- MATERIAL CLASS -->
+      <!-- ========================================= -->
+      <div class="control-group">
+        <label for="material-select"> Material Class: </label>
+        <select id="material-select">
+          <option value="Wood" selected>Wood</option>
+          <option value="Masonry">Masonry</option>
+          <option value="Concrete">Concrete</option>
+          <option value="Steel">Steel</option>
         </select>
-
-
       </div>
-
-
-      <div class="admin-control">
-
-
-        <label for="province-select">
-          Province:
-        </label>
-
-
-        <select id="province-select">
-
-
-          <option value="">
-            ALL
-          </option>
-
-
+      <!-- ========================================= -->
+      <!-- BUILDING TYPOLOGY -->
+      <!-- ========================================= -->
+      <div class="control-group">
+        <label for="indicator-select"> Building Typology: </label>
+        <select id="indicator-select">
+          <option value="">ALL</option>
         </select>
-
-
       </div>
-
-
-      <div class="admin-control">
-
-
-        <label for="municipality-select">
-          Municipality / City:
+      <!-- ========================================= -->
+      <!-- ADMINISTRATIVE FILTERS -->
+      <!-- ========================================= -->
+      <div id="admin-controls">
+        <div class="admin-control">
+          <label for="region-select"> Region: </label>
+          <select id="region-select">
+            <option value="">ALL</option>
+          </select>
+        </div>
+        <div class="admin-control">
+          <label for="province-select"> Province: </label>
+          <select id="province-select">
+            <option value="">ALL</option>
+          </select>
+        </div>
+        <div class="admin-control">
+          <label for="municipality-select"> Municipality / City: </label>
+          <select id="municipality-select">
+            <option value="">ALL</option>
+          </select>
+        </div>
+        <div class="admin-control">
+          <label for="barangay-select"> Barangay: </label>
+          <select id="barangay-select">
+            <option value="">ALL</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <!-- ========================================= -->
+    <!-- MAP -->
+    <!-- ========================================= -->
+    <div id="map">
+      <!-- ========================================= -->
+      <!-- LABEL TOGGLE -->
+      <!-- ========================================= -->
+      <div id="label-toggle-container" class="label-toggle-container">
+        <label>
+          <input type="checkbox" id="show-labels-checkbox" checked />
+          Show administrative labels
         </label>
-
-
-        <select id="municipality-select">
-
-
-          <option value="">
-            ALL
-          </option>
-
-
-        </select>
-
-
       </div>
-
-
-      <div class="admin-control">
-
-
-        <label for="barangay-select">
-          Barangay:
-        </label>
-
-
-        <select id="barangay-select">
-
-
-          <option value="">
-            ALL
-          </option>
-
-
-        </select>
-
-
+      <!-- ========================================= -->
+      <!-- LEGEND -->
+      <!-- ========================================= -->
+      <div id="legend" class="legend">
+        <button id="legend-toggle" class="legend-toggle">
+          <span id="legend-title"> Legend </span>
+          <span id="legend-arrow"> ▲ </span>
+        </button>
+        <div id="legend-content" class="legend-content">
+          <div id="legend-indicator-title" class="legend-indicator-title">Composition of Wood</div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #440154"></span>
+            <span id="legend-label-0"></span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #3b528b"></span>
+            <span id="legend-label-1"></span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #21918c"></span>
+            <span id="legend-label-2"></span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #5ec962"></span>
+            <span id="legend-label-3"></span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background: #fde725"></span>
+            <span id="legend-label-4"></span>
+          </div>
+        </div>
       </div>
-
-
     </div>
-
-
-  </div>
-
-
-  <!-- ========================================= -->
-  <!-- MAP -->
-  <!-- ========================================= -->
-
-  <div id="map">
-
-
     <!-- ========================================= -->
-    <!-- LABEL TOGGLE -->
+    <!-- MAPLIBRE -->
     <!-- ========================================= -->
-
-    <div
-      id="label-toggle-container"
-      class="label-toggle-container"
-    >
-
-
-      <label>
-
-
-        <input
-          type="checkbox"
-          id="show-labels-checkbox"
-          checked
-        >
-
-
-        Show administrative labels
-
-
-      </label>
-
-
-    </div>
-
-
+    <script
+      src="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.js"
+      defer
+    ></script>
     <!-- ========================================= -->
-    <!-- LEGEND -->
+    <!-- PMTILES -->
     <!-- ========================================= -->
-
-    <div
-      id="legend"
-      class="legend"
-    >
-
-
-      <button
-        id="legend-toggle"
-        class="legend-toggle"
-      >
-
-
-        <span id="legend-title">
-          Legend
-        </span>
-
-
-        <span id="legend-arrow">
-          ▲
-        </span>
-
-
-      </button>
-
-
-      <div
-        id="legend-content"
-        class="legend-content"
-      >
-
-
-        <div
-          id="legend-indicator-title"
-          class="legend-indicator-title"
-        >
-          C1
-        </div>
-
-
-        <div class="legend-item">
-
-
-          <span
-            class="legend-color"
-            style="background:#440154"
-          ></span>
-
-
-          <span id="legend-label-0"></span>
-
-
-        </div>
-
-
-        <div class="legend-item">
-
-
-          <span
-            class="legend-color"
-            style="background:#3B528B"
-          ></span>
-
-
-          <span id="legend-label-1"></span>
-
-
-        </div>
-
-
-        <div class="legend-item">
-
-
-          <span
-            class="legend-color"
-            style="background:#21918C"
-          ></span>
-
-
-          <span id="legend-label-2"></span>
-
-
-        </div>
-
-
-        <div class="legend-item">
-
-
-          <span
-            class="legend-color"
-            style="background:#5EC962"
-          ></span>
-
-
-          <span id="legend-label-3"></span>
-
-
-        </div>
-
-
-        <div class="legend-item">
-
-
-          <span
-            class="legend-color"
-            style="background:#FDE725"
-          ></span>
-
-
-          <span id="legend-label-4"></span>
-
-
-        </div>
-
-
-      </div>
-
-
-    </div>
-
-
-  </div>
-
-
-  <!-- ========================================= -->
-  <!-- MAPLIBRE -->
-  <!-- ========================================= -->
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/maplibre-gl@latest/dist/maplibre-gl.js"
-    defer
-  ></script>
-
-
-  <!-- ========================================= -->
-  <!-- PMTILES -->
-  <!-- ========================================= -->
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/pmtiles@latest/dist/pmtiles.js"
-    defer
-  ></script>
-
-
-  <!-- ========================================= -->
-  <!-- APPLICATION -->
-  <!-- ========================================= -->
-
-  <script
-    src="app.js"
-    defer
-  ></script>
-
-
-</body>
-
+    <script src="https://cdn.jsdelivr.net/npm/pmtiles@latest/dist/pmtiles.js" defer></script>
+    <!-- ========================================= -->
+    <!-- APPLICATION -->
+    <!-- ========================================= -->
+    <script src="app.js" defer></script>
+  </body>
 </html>
