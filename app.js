@@ -1017,6 +1017,86 @@ function createLabelElement(name) {
     return labelElement;
 }
 // =========================================================
+// SHORTEN REGION LABELS ON THE MAP ONLY
+// (dropdown values are left untouched)
+// =========================================================
+const REGION_MAP_LABEL_RULES = [
+    {
+        pattern: /BARMM/i,
+        label: "BARMM",
+    },
+    {
+        pattern: /National Capital Region/i,
+        label: "NCR",
+    },
+    {
+        pattern: /Cordillera Administrative Region/i,
+        label: "CAR",
+    },
+    {
+        pattern: /MIMAROPA/i,
+        label: "MIMAROPA",
+    },
+    {
+        pattern: /Ilocos Region/i,
+        label: "Ilocos Region (I)",
+    },
+    {
+        pattern: /Cagayan Valley/i,
+        label: "Cagayan Valley (II)",
+    },
+    {
+        pattern: /Central Luzon/i,
+        label: "Central Luzon (III)",
+    },
+    {
+        pattern: /CALABARZON/i,
+        label: "CALABARZON (IV-A)",
+    },
+    {
+        pattern: /Bicol Region/i,
+        label: "Bicol Region (V)",
+    },
+    {
+        pattern: /Western Visayas/i,
+        label: "Western Visayas (VI)",
+    },
+    {
+        pattern: /Central Visayas/i,
+        label: "Central Visayas (VII)",
+    },
+    {
+        pattern: /Eastern Visayas/i,
+        label: "Eastern Visayas (VIII)",
+    },
+    {
+        pattern: /Zamboanga Peninsula/i,
+        label: "Zamboanga Peninsula (IX)",
+    },
+    {
+        pattern: /Northern Mindanao/i,
+        label: "Northern Mindanao (X)",
+    },
+    {
+        pattern: /Davao Region/i,
+        label: "Davao Region (XI)",
+    },
+    {
+        pattern: /SOCCSKSARGEN/i,
+        label: "SOCCSKSARGEN (XII)",
+    },
+    {
+        pattern: /Caraga/i,
+        label: "Caraga (XIII)",
+    },
+];
+function getRegionMapLabel(name) {
+    const match = REGION_MAP_LABEL_RULES.find((rule) =>
+        rule.pattern.test(name),
+    );
+    return match ? match.label : name;
+}
+// =========================================================
 // UPDATE MAP LABELS
 // =========================================================
 function updateMapLabels() {
@@ -1030,6 +1110,7 @@ function updateMapLabels() {
         nameField,
         codeField,
     } = getLabelLevel();
+    const isRegionLevel = layer === "regions-fill";
     const features = map.queryRenderedFeatures(
         undefined,
         {
@@ -1049,10 +1130,13 @@ function updateMapLabels() {
     });
     uniqueFeatures.forEach((feature) => {
         const properties = feature.properties;
-        const name = properties[nameField];
+        let name = properties[nameField];
         const center = getPolygonCentroid(feature.geometry);
         if (!center || !name) {
             return;
+        }
+        if (isRegionLevel) {
+            name = getRegionMapLabel(name);
         }
         const labelElement = createLabelElement(name);
         const marker = new maplibregl.Marker({
