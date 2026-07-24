@@ -259,7 +259,7 @@ const map = new maplibregl.Map({
                     "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
                 ],
                 tileSize: 256,
-                attribution: "© OpenStreetMap contributors © CARTO",
+                attribution: '<a href="https://github.com/YOUR-USERNAME/YOUR-REPOSITORY" target="_blank" rel="noopener noreferrer">© Joshua Dimasaka · Documentation</a><br>© OpenStreetMap contributors · © CARTO',
             },
             regions: {
                 type: "vector",
